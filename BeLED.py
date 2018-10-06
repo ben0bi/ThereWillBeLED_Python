@@ -5,12 +5,15 @@
 # Direct port of the Arduino NeoPixel library strandtest example.  Showcases
 # various animations on a strip of NeoPixels.
 
+# Music: download lyrics if possible and show them.
+
 import time
 from neopixel import *
 import argparse
 
-from BeFont_x_5 import getFontChar
-font_render = getFontChar('Z')
+from BeFont_x_5 import getCharArray_x_5
+#from BeFont_x_5 import buildTextArray_x_5
+font_render = getCharArray_x_5('@')
 
 # BeLED screen configuration
 # The can have "lights" before and after it on the same line, for lighting other stuff also.
@@ -18,6 +21,7 @@ SCREEN_COUNT_PRE 	= 1		# Number of LEDs before the actual screen.
 SCREEN_COUNT_X 		= 10	# Number of LEDs in one line on the screen.
 SCREEN_COUNT_Y		= 10	# Number of lines on the screen.
 SCREEN_COUNT_AFT	= 0		# Number of LEDs after the actual screen.
+SCREEN_DIRECTION 	= 1     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
 
 # LED strip configuration:
 PIXELWAITTIME = 50*0.001
@@ -30,10 +34,8 @@ LED_BRIGHTNESS = 55     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
-SCREEN_DIRECTION 	= 1     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
-
-# render a screenarray on the strip.
-def renderChar(strip, screenarray, x, y):
+# render a screenarray onto the strip.
+def renderArray(strip, screenarray, x, y):
 	"""Render the screenarray onto the strip."""
 	screenend = LED_COUNT-(SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y))
 	# go through the screen pixels
@@ -69,9 +71,10 @@ def renderChar(strip, screenarray, x, y):
 				strip.setPixelColor(pixelpos, col)			
 	strip.show();
 	time.sleep(PIXELWAITTIME)
-
+	
 # clear all pixels
 def clearScreen(strip):
+	"""Clear all pixels on the screen."""
 	for i in range(strip.numPixels()):
 		strip.setPixelColor(i, Color(0,0,0))
 	strip.show()
@@ -95,7 +98,7 @@ if __name__ == '__main__':
     try:
 
         while True:
-			renderChar(strip,font_render,1,2)
+			renderArray(strip,font_render,1,2)
            # print ('Color wipe animations.')
            # colorWipe(strip, Color(255, 0, 0))  # Red wipe
            # colorWipe(strip, Color(0, 255, 0))  # Blue wipe

@@ -1,11 +1,44 @@
-def getFontChar(character):
-	"""Returns the char array associated to the given character."""
-	c = FIDX.index(character)
-	if c>=0 and c<len(FONT):
-		return FONT[c]
-	return font_notfound
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-font_notfound = [
+# FONT to be used with BeLED.py
+# BeFont_x_5: Chars have the size of X*5 pixels.
+# Ben0bi fonts are determined by their size.
+# by oki wan ben0bi @ 2018
+# Font consists of char arrays.
+# a char array has a specific amount of lines with variable line length.
+# The line length must match each line in the same char array.
+# The line count must match each char in the font array.
+
+# return the char array for a given character.
+def getCharArray_x_5(character):
+	"""Returns the char array associated to the given character."""
+	if character in x_5_FIDX:
+		c = x_5_FIDX.index(character)
+		if c>=0 and c<len(x_5_FONT):
+			return x_5_FONT[c]
+	return x_5_font_notfound
+
+	# build a text line screenarray (see above)
+#def buildTextArray_x_5(text):
+#	"""Build a text array from a given text."""
+#	txtline = []
+#	# create the lines
+#	for i in range(5):
+#		txtline.append([])
+#	# go through each character in the text and add the character to the array.
+#	for c in text:
+#		charr = getCharArray_x_5(c)
+#		for y in range(len(charr)):
+#			for x in range(len(charr[y])):
+#				txtline[y].append(charr[y][x])
+#	return txtline
+
+# Now follows each char in the font.
+# It will be assembled into the x_5_FONT and x_5_FIDX array at the bottom of the file.
+
+# This one will be returned directly.
+x_5_font_notfound = [
 [1,1,1,1,1,0],
 [1,1,0,1,1,0],
 [1,0,1,0,1,0],
@@ -13,6 +46,9 @@ font_notfound = [
 [1,1,1,1,1,0]
 ]
 
+# These characters will be added to the FONT array.
+
+# Numbers
 font_0 = [
 [0,1,1,1,0,0],
 [1,0,0,1,1,0],
@@ -93,7 +129,8 @@ font_9 = [
 [0,1,1,0,0]
 ]
 
-font_A = [
+# BIG characters
+font_Ab = [
 [0,1,1,0,0],
 [1,0,0,1,0],
 [1,1,1,1,0],
@@ -101,7 +138,15 @@ font_A = [
 [1,0,0,1,0]
 ]
 
-font_B = [
+font_AEb = [
+[1,0,0,1,0],
+[0,1,1,0,0],
+[1,0,0,1,0],
+[1,1,1,1,0],
+[1,0,0,1,0]
+]
+
+font_Bb = [
 [1,1,1,0,0],
 [1,0,0,1,0],
 [1,1,1,0,0],
@@ -109,7 +154,7 @@ font_B = [
 [1,1,1,0,0]
 ]
 
-font_C = [
+font_Cb = [
 [0,1,1,0],
 [1,0,0,0],
 [1,0,0,0],
@@ -117,7 +162,7 @@ font_C = [
 [0,1,1,0]
 ]
 
-font_D = [
+font_Db = [
 [1,1,1,0,0],
 [1,0,0,1,0],
 [1,0,0,1,0],
@@ -125,7 +170,7 @@ font_D = [
 [1,1,1,0,0]
 ]
 
-font_E = [
+font_Eb = [
 [1,1,1,0],
 [1,0,0,0],
 [1,1,0,0],
@@ -133,7 +178,7 @@ font_E = [
 [1,1,1,0]
 ]
 
-font_F = [
+font_Fb = [
 [1,1,1,0],
 [1,0,0,0],
 [1,1,0,0],
@@ -141,7 +186,7 @@ font_F = [
 [1,0,0,0]
 ]
 
-font_G = [
+font_Gb = [
 [0,1,1,1,0],
 [1,0,0,0,0],
 [1,0,1,1,0],
@@ -149,7 +194,7 @@ font_G = [
 [0,1,1,0,0]
 ]
 
-font_H = [
+font_Hb = [
 [1,0,0,1,0],
 [1,0,0,1,0],
 [1,1,1,1,0],
@@ -157,7 +202,7 @@ font_H = [
 [1,0,0,1,0]
 ]
 
-font_I = [
+font_Ib = [
 [1,1,1,0],
 [0,1,0,0],
 [0,1,0,0],
@@ -165,7 +210,7 @@ font_I = [
 [1,1,1,0]
 ]
 
-font_J = [
+font_Jb = [
 [1,1,1,1,0],
 [0,0,0,1,0],
 [0,0,0,1,0],
@@ -173,7 +218,7 @@ font_J = [
 [0,1,1,0,0]
 ]
 
-font_K = [
+font_Kb = [
 [1,0,0,1,0],
 [1,0,1,0,0],
 [1,1,0,0,0],
@@ -181,7 +226,7 @@ font_K = [
 [1,0,0,1,0]
 ]
 
-font_L = [
+font_Lb = [
 [1,0,0,0],
 [1,0,0,0],
 [1,0,0,0],
@@ -189,7 +234,7 @@ font_L = [
 [1,1,1,0]
 ]
 
-font_M = [
+font_Mb = [
 [1,0,0,0,1,0],
 [1,1,0,1,1,0],
 [1,0,1,0,1,0],
@@ -197,7 +242,7 @@ font_M = [
 [1,0,0,0,1,0]
 ]
 
-font_N = [
+font_Nb = [
 [1,0,0,0,1,0],
 [1,1,0,0,1,0],
 [1,0,1,0,1,0],
@@ -205,7 +250,7 @@ font_N = [
 [1,0,0,0,1,0]
 ]
 
-font_O = [
+font_Ob = [
 [0,1,1,0,0],
 [1,0,0,1,0],
 [1,0,0,1,0],
@@ -213,7 +258,15 @@ font_O = [
 [0,1,1,0,0]
 ]
 
-font_P = [
+font_OEb = [
+[1,0,0,1,0],
+[0,1,1,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[0,1,1,0,0]
+]
+
+font_Pb = [
 [1,1,1,0,0],
 [1,0,0,1,0],
 [1,1,1,0,0],
@@ -221,7 +274,7 @@ font_P = [
 [1,0,0,0,0]
 ]
 
-font_Q = [
+font_Qb = [
 [0,1,1,0,0,0],
 [1,0,0,1,0,0],
 [1,0,0,1,0,0],
@@ -229,7 +282,7 @@ font_Q = [
 [0,1,1,1,1,0]
 ]
 
-font_R = [
+font_Rb = [
 [1,1,1,0,0],
 [1,0,0,1,0],
 [1,1,1,0,0],
@@ -237,7 +290,7 @@ font_R = [
 [1,0,0,1,0]
 ]
 
-font_S = [
+font_Sb = [
 [0,1,1,1,0],
 [1,0,0,0,0],
 [0,1,1,0,0],
@@ -245,7 +298,7 @@ font_S = [
 [1,1,1,0,0]
 ]
 
-font_T = [
+font_Tb = [
 [1,1,1,1,1,0],
 [0,0,1,0,0,0],
 [0,0,1,0,0,0],
@@ -253,7 +306,7 @@ font_T = [
 [0,0,1,0,0,0]
 ]
 
-font_U = [
+font_Ub = [
 [1,0,0,0,1,0],
 [1,0,0,0,1,0],
 [1,0,0,0,1,0],
@@ -261,7 +314,15 @@ font_U = [
 [0,1,1,1,0,0]
 ]
 
-font_V = [
+font_UEb = [
+[0,1,0,1,0,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0],
+[0,1,1,1,0,0]
+]
+
+font_Vb = [
 [1,0,0,0,1,0],
 [1,0,0,0,1,0],
 [0,1,0,1,0,0],
@@ -269,7 +330,7 @@ font_V = [
 [0,0,1,0,0,0]
 ]
 
-font_W = [
+font_Wb = [
 [1,0,0,0,0,0,1,0],
 [1,0,0,0,0,0,1,0],
 [0,1,0,1,0,1,0,0],
@@ -277,7 +338,7 @@ font_W = [
 [0,0,1,0,1,0,0,0]
 ]
 
-font_X = [
+font_Xb = [
 [1,0,0,0,1,0],
 [0,1,0,1,0,0],
 [0,0,1,0,0,0],
@@ -285,7 +346,7 @@ font_X = [
 [1,0,0,0,1,0]
 ]
 
-font_Y = [
+font_Yb = [
 [1,0,0,0,1,0],
 [0,1,0,1,0,0],
 [0,0,1,0,0,0],
@@ -293,7 +354,7 @@ font_Y = [
 [0,0,1,0,0,0]
 ]
 
-font_Z = [
+font_Zb = [
 [1,1,1,1,1,0],
 [0,0,0,1,0,0],
 [0,0,1,0,0,0],
@@ -301,13 +362,415 @@ font_Z = [
 [1,1,1,1,1,0]
 ]
 
+# small characters.
+font_As = [
+[0,0,0,0,0],
+[0,1,1,1,0],
+[1,0,0,1,0],
+[1,0,1,1,0],
+[0,1,0,1,0]
+]
+
+font_AEs = [
+[0,1,0,1,0],
+[0,1,1,1,0],
+[1,0,0,1,0],
+[1,0,1,1,0],
+[0,1,0,1,0]
+]
+
+font_Bs = [
+[1,0,0,0,0],
+[1,1,1,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[1,1,1,0,0]
+]
+ 
+font_Cs = [
+[0,0,0,0],
+[0,1,1,0],
+[1,0,0,0],
+[1,0,0,0],
+[0,1,1,0]
+]
+
+font_Ds = [
+[0,0,0,1,0],
+[0,1,1,1,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[0,1,1,1,0]
+]
+
+font_Es = [
+[0,0,0,0,0],
+[0,1,1,0,0],
+[1,0,0,1,0],
+[1,0,1,0,0],
+[0,1,1,1,0]
+]
+
+font_Fs = [
+[0,1,1,0],
+[0,1,0,0],
+[1,1,1,0],
+[0,1,0,0],
+[0,1,0,0]
+]
+
+font_Gs = [
+[0,0,0,0,0],
+[0,1,1,1,0],
+[1,0,0,1,0],
+[0,1,1,1,0],
+[0,0,1,1,0]
+]
+
+font_Hs = [
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,1,1,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0]
+]
+
+font_Is = [
+[1,0],
+[0,0],
+[1,0],
+[1,0],
+[1,0]
+]
+
+font_Js = [
+[0,0,1,0],
+[0,0,0,0],
+[0,0,1,0],
+[1,0,1,0],
+[0,1,0,0]
+]
+
+font_Ks = [
+[1,0,0,0],
+[1,0,1,0],
+[1,1,0,0],
+[1,0,1,0],
+[1,0,1,0]
+]
+
+font_Ls = [
+[1,0],
+[1,0],
+[1,0],
+[1,0],
+[1,0]
+]
+
+font_Ms = [
+[0,0,0,0,0,0],
+[0,1,0,1,0,0],
+[1,0,1,0,1,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0]
+]
+
+font_Ns = [
+[0,0,0,0,0,0],
+[1,1,1,1,0,0],
+[1,0,0,0,1,0],
+[1,0,0,1,1,0],
+[1,0,0,0,1,0]
+]
+
+font_Os = [
+[0,0,0,0,0],
+[0,1,1,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[0,1,1,0,0]
+]
+
+font_OEs = [
+[1,0,0,1,0],
+[0,1,1,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[0,1,1,0,0]
+]
+
+font_Ps = [
+[0,0,0,0,0],
+[1,1,1,0,0],
+[1,0,0,1,0],
+[1,1,1,0,0],
+[1,0,0,0,0]
+]
+
+font_Qs = [
+[0,0,0,0],
+[0,1,1,0],
+[1,0,1,0],
+[0,1,1,0],
+[0,0,1,0]
+]
+
+font_Rs = [
+[0,0,0,0,0],
+[1,0,1,1,0],
+[1,1,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0]
+]
+
+font_Ss = [
+[0,0,0],
+[0,1,0],
+[1,0,0],
+[0,1,0],
+[1,0,0]
+]
+
+font_Ts = [
+[0,1,0,0],
+[0,1,0,0],
+[1,1,1,0],
+[0,1,0,0],
+[0,1,0,0]
+]
+
+font_Us = [
+[0,0,0,0,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[1,0,0,1,0],
+[0,1,1,0,0]
+]
+
+font_UEs = [
+[0,1,0,0,1,0],
+[0,0,0,0,0,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0],
+[0,1,1,1,0,0]
+]
+
+font_Vs = [
+[0,0,0,0,0,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0],
+[0,1,0,1,0,0],
+[0,0,1,0,0,0]
+] 
+
+font_Ws = [
+[0,0,0,0,0,0,0],
+[0,1,0,0,0,1,0],
+[0,1,0,1,0,1,0],
+[0,1,0,1,0,1,0],
+[0,0,1,0,1,0,0]
+]
+
+font_Xs = [
+[0,0,0,0,0],
+[1,0,0,1,0],
+[0,1,1,0,0],
+[0,1,1,0,0],
+[1,0,0,1,0]
+]
+
+font_Ys = [
+[0,0,0,0,0,0],
+[1,0,0,0,1,0],
+[0,1,0,1,0,0],
+[0,0,1,0,0,0],
+[0,0,1,0,0,0]
+]
+
+font_Zs = [
+[0,0,0,0,0],
+[1,1,1,1,0],
+[0,0,1,0,0],
+[0,1,0,0,0],
+[1,1,1,1,0]
+]
+
+# Special characters (dots, lines, etc.)
+font_DOT = [
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[1,0,0,0,0]
+]
+
+font_COMMA = [
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,1,0,0,0],
+[1,0,0,0,0]
+]
+
+font_DBLDOT = [
+[0,0,0,0,0],
+[1,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[1,0,0,0,0]
+]
+
+font_DBLCOMMA = [
+[0,0,0,0,0],
+[0,1,0,0,0],
+[0,0,0,0,0],
+[0,1,0,0,0],
+[1,0,0,0,0]
+]
+
+font_QUESTION = [
+[1,1,0,0],
+[0,0,1,0],
+[0,1,0,0],
+[0,0,0,0],
+[0,1,0,0]
+]
+
+font_EXCLAMATION = [
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[0,0,0,0,0],
+[1,0,0,0,0]
+]
+
+font_PLUS = [
+[0,0,0,0],
+[0,1,0,0],
+[1,1,1,0],
+[0,1,0,0],
+[0,0,0,0]
+]
+
+font_MINUS = [
+[0,0,0,0],
+[0,0,0,0],
+[1,1,1,0],
+[0,0,0,0],
+[0,0,0,0]
+]
+
+font_SLASH = [
+[0,0,1,0],
+[0,0,1,0],
+[0,1,0,0],
+[1,0,0,0],
+[1,0,0,0]
+]
+
+font_BACKSLASH = [
+[1,0,0,0],
+[1,0,0,0],
+[0,1,0,0],
+[0,0,1,0],
+[0,0,1,0]
+]
+
+font_BRACEOPEN = [
+[0,1,0],
+[1,0,0],
+[1,0,0],
+[1,0,0],
+[0,1,0]
+]
+
+font_BRACECLOSE = [
+[1,0,0],
+[0,1,0],
+[0,1,0],
+[0,1,0],
+[1,0,0]
+]
+
+font_AT = [
+[0,1,1,1,0],
+[1,0,0,0,1],
+[1,0,1,0,1],
+[1,1,0,1,1],
+[0,1,1,0,1]
+]
+
+font_HASHTAG = [
+[0,1,0,1,0],
+[1,1,1,1,1],
+[0,1,0,1,0],
+[1,1,1,1,1],
+[0,1,0,1,0]
+]
+
+font_UNDERLINE = [
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[1,1,1,1,0]
+]
+
+font_EQUAL = [
+[0,0,0,0,0],
+[1,1,1,1,0],
+[0,0,0,0,0],
+[1,1,1,1,0],
+[0,0,0,0,0]
+]
+
+font_TIMES = [
+[0,0,0,0],
+[1,0,1,0],
+[0,1,0,0],
+[1,0,1,0],
+[0,0,0,0]
+]
+
+font_PERCENT = [
+[1,1,0,0,1,0],
+[1,1,0,1,0,0],
+[0,0,1,0,0,0],
+[0,1,0,1,1,0],
+[1,0,0,1,1,0]
+]
+
+font_GREATER = [
+[1,0,0,0],
+[0,1,0,0],
+[0,0,1,0],
+[0,1,0,0],
+[1,0,0,0]
+]
+
+font_LESSER = [
+[0,0,1,0],
+[0,1,0,0],
+[1,0,0,0],
+[0,1,0,0],
+[0,0,1,0]
+]
+
+# Special characters
+
 # FIDX represents all the indexes in the FONT array. get a character (here: A) like this: charpixels = FONT[FIDX.index('A')]
 # The characters in FIDX MUST have the same order as they are added to the FONT array.
-FIDX=[]
-FIDX.extend(('0','1','2','3','4','5','6','7','8','9'))
-FIDX.extend(('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'))
-#FIDX.extend(('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'))
+x_5_FIDX=[]
+x_5_FIDX.extend(('0','1','2','3','4','5','6','7','8','9'))
+x_5_FIDX.extend(('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'))
+x_5_FIDX.extend(('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'))
+x_5_FIDX.extend(('.',',',':',';','?','!','+','-','\\','/','(',')','@','#','_','=','*','%','<','>'))
+x_5_FIDX.extend(('ä','Ä','ö','Ö','ü','Ü'))
 
-FONT = []
-FONT.extend((font_0,font_1,font_2, font_3, font_4, font_5, font_6, font_7, font_8, font_9))
-FONT.extend((font_A, font_B, font_C, font_D, font_E, font_F, font_G, font_H, font_I, font_J, font_K, font_L, font_M, font_N, font_O, font_P, font_Q, font_R,font_S, font_T, font_U, font_V, font_W, font_X, font_Y, font_Z))
+# The real character arrays are in the FONT array.
+x_5_FONT=[]
+x_5_FONT.extend((font_0,font_1,font_2, font_3, font_4, font_5, font_6, font_7, font_8, font_9))
+x_5_FONT.extend((font_Ab, font_Bb, font_Cb, font_Db, font_Eb, font_Fb, font_Gb, font_Hb, font_Ib, font_Jb, font_Kb, font_Lb, font_Mb, font_Nb, font_Ob, font_Pb, font_Qb, font_Rb,font_Sb, font_Tb, font_Ub, font_Vb, font_Wb, font_Xb, font_Yb, font_Zb))
+x_5_FONT.extend((font_As, font_Bs, font_Cs, font_Ds, font_Es, font_Fs, font_Gs, font_Hs, font_Is, font_Js, font_Ks, font_Ls, font_Ms, font_Ns, font_Os, font_Ps, font_Qs, font_Rs,font_Ss, font_Ts, font_Us, font_Vs, font_Ws, font_Xs, font_Ys, font_Zs))
+x_5_FONT.extend((font_DOT,font_COMMA,font_DBLDOT,font_DBLCOMMA,font_QUESTION,font_EXCLAMATION,font_PLUS,font_MINUS,font_BACKSLASH, font_SLASH,font_BRACEOPEN,font_BRACECLOSE,font_AT,font_HASHTAG,font_UNDERLINE,font_EQUAL,font_TIMES,font_PERCENT,font_LESSER,font_GREATER))
+x_5_FONT.extend((font_AEs,font_AEb,font_OEs,font_OEb,font_UEs,font_UEb))
