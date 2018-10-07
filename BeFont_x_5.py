@@ -20,19 +20,19 @@ def getCharArray_x_5(character):
 	return x_5_font_notfound
 
 	# build a text line screenarray (see above)
-#def buildTextArray_x_5(text):
-#	"""Build a text array from a given text."""
-#	txtline = []
-#	# create the lines
-#	for i in range(5):
-#		txtline.append([])
-#	# go through each character in the text and add the character to the array.
-#	for c in text:
-#		charr = getCharArray_x_5(c)
-#		for y in range(len(charr)):
-#			for x in range(len(charr[y])):
-#				txtline[y].append(charr[y][x])
-#	return txtline
+def buildTextArray_x_5(text):
+	"""Build a text array from a given text."""
+	txtline = []
+	# create the lines
+	for i in range(5):
+		txtline.append([])
+	# go through each character in the text and add the character to the array.
+	for c in text:
+		charr = getCharArray_x_5(c)
+		for y in range(len(charr)):
+			for x in range(len(charr[y])):
+				txtline[y].append(charr[y][x])
+	return txtline
 
 # Now follows each char in the font.
 # It will be assembled into the x_5_FONT and x_5_FIDX array at the bottom of the file.
@@ -596,6 +596,14 @@ font_Zs = [
 ]
 
 # Special characters (dots, lines, etc.)
+font_SPACE = [
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0],
+[0,0,0,0,0]
+]
+
 font_DOT = [
 [0,0,0,0,0],
 [0,0,0,0,0],
@@ -764,7 +772,7 @@ x_5_FIDX=[]
 x_5_FIDX.extend(('0','1','2','3','4','5','6','7','8','9'))
 x_5_FIDX.extend(('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'))
 x_5_FIDX.extend(('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'))
-x_5_FIDX.extend(('.',',',':',';','?','!','+','-','\\','/','(',')','@','#','_','=','*','%','<','>'))
+x_5_FIDX.extend((' ','.',',',':',';','?','!','+','-','\\','/','(',')','@','#','_','=','*','%','<','>'))
 x_5_FIDX.extend(('ä','Ä','ö','Ö','ü','Ü'))
 
 # The real character arrays are in the FONT array.
@@ -772,5 +780,5 @@ x_5_FONT=[]
 x_5_FONT.extend((font_0,font_1,font_2, font_3, font_4, font_5, font_6, font_7, font_8, font_9))
 x_5_FONT.extend((font_Ab, font_Bb, font_Cb, font_Db, font_Eb, font_Fb, font_Gb, font_Hb, font_Ib, font_Jb, font_Kb, font_Lb, font_Mb, font_Nb, font_Ob, font_Pb, font_Qb, font_Rb,font_Sb, font_Tb, font_Ub, font_Vb, font_Wb, font_Xb, font_Yb, font_Zb))
 x_5_FONT.extend((font_As, font_Bs, font_Cs, font_Ds, font_Es, font_Fs, font_Gs, font_Hs, font_Is, font_Js, font_Ks, font_Ls, font_Ms, font_Ns, font_Os, font_Ps, font_Qs, font_Rs,font_Ss, font_Ts, font_Us, font_Vs, font_Ws, font_Xs, font_Ys, font_Zs))
-x_5_FONT.extend((font_DOT,font_COMMA,font_DBLDOT,font_DBLCOMMA,font_QUESTION,font_EXCLAMATION,font_PLUS,font_MINUS,font_BACKSLASH, font_SLASH,font_BRACEOPEN,font_BRACECLOSE,font_AT,font_HASHTAG,font_UNDERLINE,font_EQUAL,font_TIMES,font_PERCENT,font_LESSER,font_GREATER))
+x_5_FONT.extend((font_SPACE,font_DOT,font_COMMA,font_DBLDOT,font_DBLCOMMA,font_QUESTION,font_EXCLAMATION,font_PLUS,font_MINUS,font_BACKSLASH, font_SLASH,font_BRACEOPEN,font_BRACECLOSE,font_AT,font_HASHTAG,font_UNDERLINE,font_EQUAL,font_TIMES,font_PERCENT,font_LESSER,font_GREATER))
 x_5_FONT.extend((font_AEs,font_AEb,font_OEs,font_OEb,font_UEs,font_UEb))

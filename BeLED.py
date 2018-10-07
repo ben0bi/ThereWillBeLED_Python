@@ -12,8 +12,9 @@ from neopixel import *
 import argparse
 
 from BeFont_x_5 import getCharArray_x_5
-#from BeFont_x_5 import buildTextArray_x_5
-font_render = getCharArray_x_5('@')
+from BeFont_x_5 import buildTextArray_x_5
+font_render = buildTextArray_x_5('Hello World!')
+txt_width = len(font_render[0])
 
 # BeLED screen configuration
 # The can have "lights" before and after it on the same line, for lighting other stuff also.
@@ -90,27 +91,20 @@ if __name__ == '__main__':
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     strip.begin()
-
+	
     print ('Press Ctrl-C to quit.')
     if not args.clear:
         print('Use "-c" argument to clear LEDs on exit')
-
+	
     try:
-
-        while True:
-			renderArray(strip,font_render,1,2)
-           # print ('Color wipe animations.')
-           # colorWipe(strip, Color(255, 0, 0))  # Red wipe
-           # colorWipe(strip, Color(0, 255, 0))  # Blue wipe
-           # colorWipe(strip, Color(0, 0, 255))  # Green wipe
-           # print ('Theater chase animations.')
-           # theaterChase(strip, Color(127, 127, 127))  # White theater chase
-           # theaterChase(strip, Color(127,   0,   0))  # Red theater chase
-           # theaterChase(strip, Color(  0,   0, 127))  # Blue theater chase
-           # print ('Rainbow animations.')
-           # rainbow(strip)
-           # rainbowCycle(strip)
-           # theaterChaseRainbow(strip)
+		
+		px = SCREEN_COUNT_X+1
+		while True:
+			renderArray(strip,font_render,px,2)
+			px=px-1
+			# reset text position
+			if px <= -txt_width:
+				px=SCREEN_COUNT_X+1
 
     except KeyboardInterrupt:
         if args.clear:
