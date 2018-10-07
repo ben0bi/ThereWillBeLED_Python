@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # NeoPixel library strandtest example
 # Author: Tony DiCola (tony@tonydicola.com)
 #
@@ -13,7 +15,7 @@ import argparse
 
 from BeFont_x_5 import getCharArray_x_5
 from BeFont_x_5 import buildTextArray_x_5
-font_render = buildTextArray_x_5('Hello World!')
+font_render = buildTextArray_x_5('Danke für Ihren Besuch, bis zum nächsten Mal. Wuffwuff.')
 txt_width = len(font_render[0])
 
 # BeLED screen configuration

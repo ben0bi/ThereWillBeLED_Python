@@ -11,15 +11,27 @@
 # The line count must match each char in the font array.
 
 # return the char array for a given character.
+# returns -1 the character is part of a special character.
+prechar = ''
 def getCharArray_x_5(character):
 	"""Returns the char array associated to the given character."""
-	if character in x_5_FIDX:
-		c = x_5_FIDX.index(character)
-		if c>=0 and c<len(x_5_FONT):
-			return x_5_FONT[c]
-	return x_5_font_notfound
+	global prechar
+	# is it a special character prefix
+	if ord(character)==195:
+		prechar=chr(195)
+		return -1
+	else:
+		# maybe add special character prefix.
+		ch = prechar + character
+		prechar = ''
+		if ch in x_5_FIDX:
+			c = x_5_FIDX.index(ch)
+			if c>=0 and c<len(x_5_FONT):
+				return x_5_FONT[c]
+		print("Character not found: "+character+"("+str(ord(character))+")")
+		return x_5_font_notfound
 
-	# build a text line screenarray (see above)
+# build a text line screenarray
 def buildTextArray_x_5(text):
 	"""Build a text array from a given text."""
 	txtline = []
@@ -29,9 +41,10 @@ def buildTextArray_x_5(text):
 	# go through each character in the text and add the character to the array.
 	for c in text:
 		charr = getCharArray_x_5(c)
-		for y in range(len(charr)):
-			for x in range(len(charr[y])):
-				txtline[y].append(charr[y][x])
+		if charr!=-1:
+			for y in range(len(charr)):
+				for x in range(len(charr[y])):
+					txtline[y].append(charr[y][x])
 	return txtline
 
 # Now follows each char in the font.
@@ -479,7 +492,7 @@ font_Ns = [
 [0,0,0,0,0,0],
 [1,1,1,1,0,0],
 [1,0,0,0,1,0],
-[1,0,0,1,1,0],
+[1,0,0,0,1,0],
 [1,0,0,0,1,0]
 ]
 
@@ -548,7 +561,15 @@ font_Us = [
 ]
 
 font_UEs = [
-[0,1,0,0,1,0],
+[0,1,0,1,0,0],
+[0,0,0,0,0,0],
+[1,0,0,0,1,0],
+[1,0,0,0,1,0],
+[0,1,1,1,0,0]
+]
+
+font_UEb = [
+[0,1,0,1,0,0],
 [0,0,0,0,0,0],
 [1,0,0,0,1,0],
 [1,0,0,0,1,0],
