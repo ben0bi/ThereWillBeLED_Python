@@ -66,8 +66,10 @@ def renderArray(strip, screenarray, x, y):
 						setpix = screenarray[ty][tx]
 				# set the right color
 				col = Color(0,127,0)
-				if setpix == 0:
-					col = Color(0,0,0)
+				# blank pixel gets background color.
+				# if setpix == 0:
+				#	col = Color(0,0,0)
+				# coloured pixel gets foreground color.
 				if setpix == 1:
 					col = Color(127,0,0)
 				# set the color on the screen.	

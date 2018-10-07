@@ -12,22 +12,24 @@
 
 # return the char array for a given character.
 # returns -1 the character is part of a special character.
-prechar = ''
+x_5_prechar = ''
 def getCharArray_x_5(character):
 	"""Returns the char array associated to the given character."""
-	global prechar
-	# is it a special character prefix
+	global x_5_prechar
+	# is it a special character prefix?
 	if ord(character)==195:
-		prechar=chr(195)
+		# then set the prefix and return -1
+		x_5_prechar=chr(195)
 		return -1
 	else:
-		# maybe add special character prefix.
-		ch = prechar + character
-		prechar = ''
+		# add the character. maybe add the special character prefix (again) to the character.
+		ch = x_5_prechar + character
+		x_5_prechar = '' # reset the prefix character to nothing.
 		if ch in x_5_FIDX:
 			c = x_5_FIDX.index(ch)
 			if c>=0 and c<len(x_5_FONT):
 				return x_5_FONT[c]
+		# the character is not in the list.
 		print("Character not found: "+character+"("+str(ord(character))+")")
 		return x_5_font_notfound
 
