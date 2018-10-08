@@ -13,10 +13,9 @@ import time
 from neopixel import *
 import argparse
 
-from BeFont_x_5 import getCharArray_x_5
-from BeFont_x_5 import buildTextArray_x_5
-font_render = buildTextArray_x_5('Danke für Ihren Besuch, bis zum nächsten Mal. Wuffwuff.')
-txt_width = len(font_render[0])
+from BeFont_x_6 import getCharArray_x_6
+from BeFont_x_6 import buildTextArray_x_6
+font_render = buildTextArray_x_6('Hey sexy Jenny du bist so sexy und heiss. Danke für deinen Einkauf.')
 
 # BeLED screen configuration
 # The can have "lights" before and after it on the same line, for lighting other stuff also.
@@ -101,10 +100,19 @@ if __name__ == '__main__':
         print('Use "-c" argument to clear LEDs on exit')
 	
     try:
-		
 		px = SCREEN_COUNT_X+1
+		oldtime = 0
+		timearray = buildTextArray_x_6("0")
+		txt_width=0
 		while True:
-			renderArray(strip,font_render,px,2)
+			currenttime = time.ctime(time.time())
+			if(oldtime!=currenttime):
+				timearray = buildTextArray_x_6(currenttime)
+				print("Time:"+currenttime)
+				oldtime = currenttime
+				txt_width = len(timearray[0])				
+			#renderArray(strip,font_render,px,2)
+			renderArray(strip,timearray,px,2)
 			px=px-1
 			# reset text position
 			if px <= -txt_width:
