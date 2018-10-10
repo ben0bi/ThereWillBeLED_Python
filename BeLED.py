@@ -4,31 +4,28 @@
 # NeoPixel library strandtest example
 # Author: Tony DiCola (tony@tonydicola.com)
 #
+# Heavily edited by ben0bi for using the BeLED library.
+#
 # Direct port of the Arduino NeoPixel library strandtest example.  Showcases
 # various animations on a strip of NeoPixels.
 
-# Music: download lyrics if possible and show them.
+# Target (Problems to solve, not related to LEDs):
+# 	Get song name from (remote) mopidy server. Server can use a script.
+#		It is not possible to use LEDs and mopidy on the same raspberry. 
+#		So I use 2 raspis, one for playing music and one for fancy LED stuff.
+#		The second one should be notified when the song on the first one changes.
+#		It should download and show the song name and other information when the user presses a (GPIO-)button.
+# Nice-To-Have for Music: download lyrics if possible and show them.
 
 import time
 from neopixel import *
 import argparse
 
+from BeLEDLib import *
+
 from BeFont_x_6 import getCharArray_x_6
 from BeFont_x_6 import buildTextArray_x_6
 font_render = buildTextArray_x_6('Hey Süsse, bock aufn Kaffee ;)? Der Himmel hat angerufen, es fehlt ein Engel blahblah blah und so weiter.... :)')
-
-# BeLED screen configuration
-# The screen can have "lights" before and after it on the same line, for lighting other stuff, too, like a power LED.
-SCREEN_COUNT_PRE 	= 1		# Number of LEDs before the actual screen.
-SCREEN_COUNT_X 		= 10	# Number of LEDs in one line on the screen.
-SCREEN_COUNT_Y		= 10	# Number of lines on the screen.
-SCREEN_COUNT_AFT	= 0		# Number of LEDs after the actual screen.
-SCREEN_DIRECTION 	= 1     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
-							# This is used for the renderArray function to determine which side of the array faces up.
-							# Needed for rendering the fonts in the right direction, my setup is "wrong" for y so I use 1 here.
-#SCREEN_ORIENTATION = 0		# 0 = "north", 1 = "south", 2 = "east", 3 = "west"
-							# even if the screen is flipped right, it may be turned into the wrong direction.
-							# we turn it with this function.
 
 # LED strip configuration:
 PIXELWAITTIME = 50*0.001
@@ -41,6 +38,7 @@ LED_BRIGHTNESS = 55     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
+# some colouring stuff from the original example.
 def wheel(pos):
 	"""Generate rainbow colors across 0-255 positions."""
 	if pos < 85:
@@ -52,33 +50,52 @@ def wheel(pos):
 		pos-=170
 		return Color(0,pos*3,255-pos*3)
 
+# edited original example to use masks and run frame-by-frame.
 j = 0
 maxJ = 256
 def rainbowCycle(strip, maskarray):
-	"""Draw rainbow that uniformly distributes itself across all pixels."""
+	"""Draw rainbow that uniformly distributes itself across all pixels, but just where the mask is set.
+		ATTENTION: This function uses a FLAT mask!"""
 	global j
 	global maxJ
 	for i in range(strip.numPixels()):
-		if i>=SCREEN_COUNT_PRE and i<SCREEN_COUNT_PRE+SCREEN_COUNT_X*SCREEN_COUNT_Y:
-			maskpos = i-SCREEN_COUNT_PRE
+		# Here we check for the mask. i must be greater than the preled count and smaller than the screen end position.
+		# Both are defined in the library file.
+		if i>=SCREEN_COUNT_PRE and i<SCREEN_END_POSITION:
+			maskpos = i-SCREEN_COUNT_PRE # mask position has no Pre-LED indexes so we subtract these.
 			if maskpos>=0 and maskpos<len(maskarray):
-				if maskarray[maskpos]!=0:
+				if maskarray[maskpos]!=0:				# colour only if the mask at this position is set.
 					strip.setPixelColor(i,wheel((int(i*256/strip.numPixels())+j)&255))
-	j=j-5
+	j=j-5	# adjust the colour "position".
 	if j<=0:
 		j=maxJ+j
 
 ###### RENDER FUNCTIONS ##########################
+
+# clear all pixels
+def clearScreen(strip, clearcolor):
+	"""Clear all pixels on the screen."""
+	for i in range(strip.numPixels()):
+		strip.setPixelColor(i, clearcolor)
+	strip.show()
+
+# Render the background image.
 def renderBackground(strip):
-	#rainbowCycle(strip)
-	clearScreen(strip)
+	# just clear the screen. You could also do....other stuff here.
+	clearScreen(strip, Color(0,0,0))
 	return 0
 
+# some global variables for the foreground animation.
+# I just learned python some days ago so please forgive me for not using classes or whatever...structs... :)
 foregroundx=SCREEN_COUNT_X+1
 oldtime= -1
+
+# PART OF EXAMPLE: BUILD THE TEXT ARRAY
 timearray = buildTextArray_x_6("0")
+
 txt_width=0
 def renderForeground(strip):
+	# we will show the time in fancy rainbow colours here.
 	global foregroundx
 	global oldtime
 	global txt_width
@@ -88,85 +105,25 @@ def renderForeground(strip):
 	currenttime = time.ctime(time.time())
 	if(oldtime!=currenttime):
 		# maybe build a new time array.
-		timearray = buildTextArray_x_6(currenttime)
-		print("Time:"+currenttime)
+# PART OF EXAMPLE: BUILD THE TEXT ARRAY
+		timearray = buildTextArray_x_6(currenttime) # create the text array.
 		oldtime = currenttime
 		txt_width = len(timearray[0])
 
+# BeLED EXAMPLE
 	mask = createFlatScreenMask(timearray,foregroundx,2)
 	rainbowCycle(strip, mask)
 	foregroundx=foregroundx-1
 	# reset text position
 	if foregroundx <= -txt_width:
 		foregroundx=SCREEN_COUNT_X+1
-
+# Aaand done. :)
 	return 0
-	
-# render a screenarray to a mask with the size of the strip screen.
-def createScreenMask(screenarray,x,y):
-	"""Create a mask (buffer) in screen size and put the screen array on it."""
-	screenend = LED_COUNT-(SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y))
-	
-	# create the screen buffer and clear it.
-	returnarray = []
-	for cy in range(SCREEN_COUNT_Y):
-		returnarray.append([])
-		for cx in range(SCREEN_COUNT_X):
-			returnarray[cy].append(0)
-	
-	# go through the screen pixels
-	# and create the mask on the returnarray.
-	for sy in range(SCREEN_COUNT_Y):
-		for sx in range(SCREEN_COUNT_X):
-			# pixelpos is the real screen position
-			if SCREEN_DIRECTION==0:
-				ppX =sx
-				ppY =sy
-			# flip only y
-			if SCREEN_DIRECTION==1:
-				ppX = sx
-				ppY = SCREEN_COUNT_Y-sy-1
-			# flip only x
-			if SCREEN_DIRECTION==2:
-				ppX = SCREEN_COUNT_X-sx-1
-				ppY = sy
-			# flip x and y
-			if SCREEN_DIRECTION==3:
-				ppX = SCREEN_COUNT_X-sx-1
-				ppY = SCREEN_COUNT_Y-sy-1
-			# check if the position is on the screen.
-			if ppX>=0 and ppY>=0 and ppX<SCREEN_COUNT_X and ppY<SCREEN_COUNT_Y:
-				# get the position on the screenarray
-				tx = sx - x
-				ty = sy - y
-				setpix = -1
-				if len(screenarray)>ty and ty>=0:
-					if len(screenarray[ty])>tx and tx>=0:
-						setpix = screenarray[ty][tx]
-				# set the right color
-				#col = Color(0,127,0)
-				# blank pixel gets background color.
-				# if setpix == 0:
-				#	col = Color(0,0,0)
-				# coloured pixel gets foreground color.
-				if setpix != -1:
-					returnarray[ppY][ppX]=setpix
-	
-	return returnarray
-
-# create a one dimensional screen mask.
-def createFlatScreenMask(screenarray,x,y):
-	mask = createScreenMask(screenarray, x,y)
-	ret = []
-	for y in range(len(mask)):
-		for x in range(len(mask[y])):
-			ret.append(mask[y][x])
-	return ret
 
 # render a screenarray onto the strip.
-def renderArray(strip, screenarray, x, y):
+#def renderArray(strip, screenarray, x, y):
 	"""Render the screenarray onto the strip."""
-	screenend = LED_COUNT-(SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y))
+"""
 	# go through the screen pixels
 	for sy in range(SCREEN_COUNT_Y):
 		for sx in range(SCREEN_COUNT_X):
@@ -199,14 +156,7 @@ def renderArray(strip, screenarray, x, y):
 				if setpix == 1:
 					col = Color(150,255,0)
 					# set the color on the screen.	
-					strip.setPixelColor(pixelpos, col)
-
-# clear all pixels
-def clearScreen(strip):
-	"""Clear all pixels on the screen."""
-	for i in range(strip.numPixels()):
-		strip.setPixelColor(i, Color(0,0,0))
-	strip.show()
+					strip.setPixelColor(pixelpos, col)"""
 
 # Main program logic follows:
 if __name__ == '__main__':
@@ -238,4 +188,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         if args.clear:
-            clearScreen(strip)
+            clearScreen(strip, Color(0,0,0))
