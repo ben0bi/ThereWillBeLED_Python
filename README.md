@@ -21,12 +21,14 @@ or like this when it is assembled:
 Now note that all screen operations, like the masking stuff, ONLY affects the 5x5 screen and NOT the other LEDs.
 Keep that in mind. You will need to take the PRE-Leds into account when using a mask!
 
+(Pre- and AfterLEDs are not really handled right now but my setup has a "lonely" LED at the begin and I won't change it. ;) )
+
 Now for the fonts:
 Import the right font file (here: x*6, where x says that it is of variable width)
 
 You just need to import the buildtextArray function. All the other stuff will be handled internally.
 
-from BeFont_x_6.py import buildTextArray_x_6
+from BeFont_x_6 import buildTextArray_x_6
 
 The font files consist of arrays with the font characters in pixels, where 0 (o) is not set and 1 (X) is set:
 e.g: A  
@@ -35,6 +37,9 @@ XooXo
 XXXXo  
 XooXo  
 ooooo  
+
+You see the last line and the far right pixels cleared: This is the space between two characters. The last line will be used
+for some small characters. That is why small chars are not used in the x_5 font.
 
 The files consist of two arrays, one with all the font characters (FONT) and one with all the characters on
 the right index position. The indexes of FONT and FIDX characters must match!
