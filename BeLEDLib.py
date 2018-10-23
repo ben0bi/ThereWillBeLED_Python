@@ -46,7 +46,7 @@
 # It has x and y array. (The x'es are in the y array): fontArray[y][x], not vice versa!
 
 # Now we make a mask from it.
-# A mask is an array in the size of the LED screen (5x5). 
+# A mask is an array in the size of the LED screen (5x5).
 # On the mask we set the pixels which are occupied by the font.
 # The font is moving on the screen and so it is (also moving) on the mask.
 
@@ -63,13 +63,13 @@
 
 # BeLED screen configuration
 # The screen can have "lights" before and after it on the same line, for lighting other stuff, too, like a power LED.
-SCREEN_COUNT_PRE 	= 1		# Number of LEDs before the actual screen. I use one special LED for...special stuff. :)
+SCREEN_COUNT_PRE 	= 12	# Number of LEDs before the actual screen. I use one special LED for...special stuff. :)
 SCREEN_COUNT_X 		= 10	# Number of LEDs in one line on the screen.
 SCREEN_COUNT_Y		= 10	# Number of lines on the screen.
-SCREEN_COUNT_AFT	= 0		# Number of LEDs after the actual screen. I just use one at the begin.
-SCREEN_DIRECTION 	= 1     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
-							# This is used for the renderArray function to determine which side of the array faces up.
-							# Needed for rendering the fonts in the right direction, my setup is "wrong" for y so I use 1 here.
+SCREEN_COUNT_AFT	= 0	# Number of LEDs after the actual screen. I just use one at the begin.
+SCREEN_DIRECTION 	= 2     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
+					# This is used for the renderArray function to determine which side of the array faces up.
+					# Needed for rendering the fonts in the right direction, my setup is "wrong" for y so I use 1 here.
 #SCREEN_ORIENTATION = 0		# 0 = "north", 1 = "south", 2 = "east", 3 = "west"
 # (not used right now)		# even if the screen is flipped right, it may be turned into the wrong direction.
 							# we turn it with this function.
@@ -78,14 +78,14 @@ SCREEN_END_POSITION = (SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y))
 # render a screenarray to a mask with the size of the strip screen.
 def createScreenMask(screenarray,x,y):
 	"""Create a mask (buffer) in screen size and put the screen array on it, moved by x and y"""
-	
+
 	# create the screen buffer and clear it.
 	returnarray = []
 	for cy in range(SCREEN_COUNT_Y):
 		returnarray.append([])
 		for cx in range(SCREEN_COUNT_X):
 			returnarray[cy].append(0)
-	
+
 	# go through the screen pixels
 	# and create the mask on the returnarray.
 	for sy in range(SCREEN_COUNT_Y):

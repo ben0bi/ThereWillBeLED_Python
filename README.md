@@ -67,3 +67,32 @@ The first one is (then) used to put this pixels directly on the one-dimensional 
 
 Now you can go through your strip and just check the mask, if it should be coloured. If so, make some fancy color for it.
 Just look at the rainbowCycle function in BeLED.py. Don't forget to take the Pre-LEDs into account!
+
+============================================================================
+Project setup:
+WARNING: NOT ALL LINES MAY WORK, CHECK THEM
+You may not need the ssh-server, but I have headless all the time.
+
+Raspi LAMP Setup:
+
+#LAMP
+sudo apt-get update
+sudo apt-get install apache2 php php-mysql ssh-server mysql-server mysql-client
+sudo apt-get install libapache2-mod-auth-mysql phpmyadmin
+#python
+sudo apt-get install python(3?)
+sudo apt-get install python-mysqldb
+#git
+sudo apt-get install git
+#screen
+sudo apt-get install screen
+#my projects
+(home dir)
+git clone https://github.com/ben0bi/ThereWillBeLED_Python.git
+(web dir, /var/www/html)
+sudo git clone https://github.com/ben0bi/BeCal.git
+
+Make a redirecting index.html in /var/www/html which redirects to BeCal/index.html
+
+DB Setup....to be done.
+

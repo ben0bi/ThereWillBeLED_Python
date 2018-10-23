@@ -11,7 +11,7 @@
 
 # Target (Problems to solve, not related to LEDs):
 # 	Get song name from (remote) mopidy server. Server can use a script.
-#		It is not possible to use LEDs and mopidy on the same raspberry. 
+#		It is not possible to use LEDs and mopidy on the same raspberry.
 #		So I use 2 raspis, one for playing music and one for fancy LED stuff.
 #		The second one should be notified when the song on the first one changes.
 #		It should download and show the song name and other information when the user presses a (GPIO-)button.
@@ -25,16 +25,18 @@ from BeLEDLib import *
 
 from BeFont_x_6 import getCharArray_x_6
 from BeFont_x_6 import buildTextArray_x_6
-font_render = buildTextArray_x_6('Hey Süsse, bock aufn Kaffee ;)? Der Himmel hat angerufen, es fehlt ein Engel blahblah blah und so weiter.... :)')
+#font_render = buildTextArray_x_6('Dr Beni het Sex und zwar JETZ, mit Fraue woner cha vertraue und trotzdem versaue!')
+#font_render = buildTextArray_x_6('ben0biTech Incorporated & Co. KG bedankt sich herzlich bei allen Nichtmitarbeitern für ihre Unterstützung! *Danki Sähr*')
+font_render = buildTextArray_x_6('III: Gaia    ')
 
 # LED strip configuration:
-PIXELWAITTIME = 50*0.001
+PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
 LED_COUNT      = SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y) + SCREEN_COUNT_AFT  # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 #LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 55     # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = 155     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
@@ -80,9 +82,18 @@ def clearScreen(strip, clearcolor):
 	strip.show()
 
 # Render the background image.
+actualPreLed = 0
+actualPreLedColor = Color(0,0,255)
 def renderBackground(strip):
+	global actualPreLed
+	global actualPreLedColor
 	# just clear the screen. You could also do....other stuff here.
 	clearScreen(strip, Color(0,0,0))
+	# create some stuff for the wheel.
+	strip.setPixelColor(actualPreLed,actualPreLedColor)
+	actualPreLed=actualPreLed-1
+	if actualPreLed<0:
+		actualPreLed=11
 	return 0
 
 # some global variables for the foreground animation.
@@ -92,6 +103,7 @@ oldtime= -1
 
 # PART OF EXAMPLE: BUILD THE TEXT ARRAY
 timearray = buildTextArray_x_6("0")
+timearray = font_render
 
 txt_width=0
 def renderForeground(strip):
@@ -100,18 +112,17 @@ def renderForeground(strip):
 	global oldtime
 	global txt_width
 	global timearray
-	
+
 	# get the current time.
 	currenttime = time.ctime(time.time())
 	if(oldtime!=currenttime):
 		# maybe build a new time array.
 # PART OF EXAMPLE: BUILD THE TEXT ARRAY
-		timearray = buildTextArray_x_6(currenttime) # create the text array.
+#		timearray = buildTextArray_x_6(currenttime) # create the text array.
 		oldtime = currenttime
 		txt_width = len(timearray[0])
-
 # BeLED EXAMPLE
-	mask = createFlatScreenMask(timearray,foregroundx,2)
+	mask = createFlatScreenMask(timearray,foregroundx,0)
 	rainbowCycle(strip, mask)
 	foregroundx=foregroundx-1
 	# reset text position
@@ -173,7 +184,7 @@ if __name__ == '__main__':
     print ('Press Ctrl-C to quit.')
     if not args.clear:
         print('Use "-c" argument to clear LEDs on exit')
-	
+
     try:
 		while True:
 			#renderArray(strip,font_render,px,2)
