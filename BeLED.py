@@ -21,16 +21,70 @@ import time
 from neopixel import *
 import argparse
 
+import RPi.GPIO as GPIO
+
 from BeLEDLib import *
 
 #from BeFont_x_6 import getCharArray_x_6
 from BeFont_x_6 import buildTextArray_x_6
 from BeSymbols_x_3 import buildSymbolArray_x_3
 
-#font_render = buildTextArray_x_6('Dr Beni het Sex und zwar JETZ, mit Fraue woner cha vertraue und trotzdem versaue!')
-#font_render = buildTextArray_x_6('ben0biTech Incorporated & Co. KG bedankt sich herzlich bei allen Nichtmitarbeitern für ihre Unterstützung! *Danki Sähr*')
-font_render = buildTextArray_x_6('III: Gaia    ')
-symbol_render = buildSymbolArray_x_3('3')
+font_render = buildTextArray_x_6('III: Gaia    ') # This is the main x_6 font text, in rainbow colors.
+symbol_render = buildSymbolArray_x_3('3')		  # This is the Symbol below the main text.
+
+# The GPIO BCM numbers of the buttons to switch trough the menu items.
+BCM_BTN_MAINMENU = 17		# Button number for the main menu
+BCM_BTN_SUBMENU = 27		# Button number for the submenu
+BCM_BTNPRESS_MAINMENU = 0	# Is the button already down?
+BCM_BTNPRESS_SUBMENU = 0	# -"- ?
+
+ACTUAL_MENU_ITEM = 0 	# Which menu is acutally on?
+MAX_MAINMENU_ITEMS = 4  # the maximum main menu items.
+ACTUAL_SUBMENU_ITEM = 0 # Same for the submenu.
+
+# initialize the GPIO buttons.
+def initGPIO():
+	global BCM_BTN_MAINMENU, BCM_BTN_SUBMENU
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(BCM_BTN_MAINMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+	GPIO.setup(BCM_BTN_SUBMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+	print ("GPIO setup done.")
+
+# update the GPIO buttons and switch through the menus.
+def updateGPIOButtons():
+	global BCM_BTN_MAINMENU, BCM_BTN_SUBMENU
+	global BCM_BTNPRESS_MAINMENU, BCM_BTNPRESS_SUBMENU
+	# get the buttons.
+	btn_mm = GPIO.input(BCM_BTN_MAINMENU)
+	btn_sm = GPIO.input(BCM_BTN_SUBMENU)
+	# check them and do something.
+	# check for the main menu.
+	if btn_mm==1: # is the mainmenu button down?
+		if BCM_BTNPRESS_MAINMENU == 0: # only do it once.
+			advanceMenu(0)
+		BCM_BTNPRESS_MAINMENU = 1 # set the button as pressed.
+	else:
+		BCM_BTNPRESS_MAINMENU = 0 # reset the button
+	# same with the submenu.
+	if btn_sm==1: # is the mainmenu button down?
+		if BCM_BTNPRESS_SUBMENU == 0: # only do it once.
+			advanceMenu(1)
+		BCM_BTNPRESS_SUBMENU = 1 # set the button as pressed.
+	else:
+		BCM_BTNPRESS_SUBMENU = 0 # reset the button
+
+# advance the menu.
+def advanceMenu(isSubMenu):
+	global ACTUAL_MENU_ITEM, ACTUAL_SUBMENU_ITEM
+	global MAX_MAINMENU_ITEMS
+	if isSubMenu == 0:
+		ACTUAL_SUBMENU_ITEM = 0 # Reset the actual submenu item.
+		ACTUAL_MENU_ITEM = ACTUAL_MENU_ITEM + 1
+		if ACTUAL_MENU_ITEM >= MAX_MAINMENU_ITEMS:
+			ACTUAL_MENU_ITEM = 0
+	else:
+		ACTUAL_SUBMENU_ITEM = ACTUAL_SUBMENU_ITEM + 1
+	print("Menu selection: "+str(ACTUAL_MENU_ITEM)+" Submenu: "+str(ACTUAL_SUBMENU_ITEM))
 
 # LED strip configuration:
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
@@ -129,14 +183,7 @@ def renderBackground(strip):
 		actualPreLed=11
 	return 0
 
-# some global variables for the foreground animation.
-# I just learned python some days ago so please forgive me for not using classes or whatever...structs... :)
-
-#oldtime= -1
-
 # PART OF EXAMPLE: BUILD THE TEXT ARRAY
-#timearray = buildTextArray_x_6("0")
-#timearray = font_render
 
 # get the text widths for floating.
 txt_width=len(font_render[0])
@@ -194,7 +241,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
     args = parser.parse_args()
-
+    initGPIO()
+	
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
@@ -208,6 +256,7 @@ if __name__ == '__main__':
 		while True:
 			#renderArray(strip,font_render,px,2)
 			# render the background.
+			updateGPIOButtons()
 			renderBackground(strip)
 			# render the foreground.
 			renderForeground(strip)
@@ -220,3 +269,4 @@ if __name__ == '__main__':
         if args.clear:
             clearScreen(strip, Color(0,0,0))
             strip.show()
+            GPIO.cleanup()
