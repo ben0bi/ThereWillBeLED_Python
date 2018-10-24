@@ -130,3 +130,16 @@ def createFlatScreenMask(screenarray,x,y):
 		for x in range(len(mask[y])):
 			ret.append(mask[y][x])
 	return ret
+
+# create a combined flat mask with ORed values (1,1=1 / 0,1=1 / 1,0=1, 0,0=0)
+# the two mask arrays must have the same size. But this will not be a problem as long as you don't
+# change the screen size in mid-program. Masks are created based on the real screen size,
+# not on the given input size.
+def combineFlatScreenMasks_OR(mask1, mask2):
+	result = []
+	for i in range(len(mask1)):
+		if mask1[i]==1 or mask2[i]==1:
+			result.append(1)
+		else:
+			result.append(0)
+	return result
