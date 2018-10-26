@@ -38,9 +38,15 @@ BCM_BTN_SUBMENU = 27		# Button number for the submenu
 BCM_BTNPRESS_MAINMENU = 0	# Is the button already down?
 BCM_BTNPRESS_SUBMENU = 0	# -"- ?
 
+# Menu item stuff.
 ACTUAL_MENU_ITEM = 0 	# Which menu is acutally on?
 MAX_MAINMENU_ITEMS = 4  # the maximum main menu items.
 ACTUAL_SUBMENU_ITEM = 0 # Same for the submenu.
+
+# Menu Variables for display.
+MENU_SHOW_TIME = 2.0	# How many seconds to show the menu entry?
+MENU_CHANGED_TIME = 0.0	# Set the seconds to show the menu here.
+# It will count down to 0 and then show the function.
 
 # initialize the GPIO buttons.
 def initGPIO():
@@ -77,6 +83,7 @@ def updateGPIOButtons():
 def advanceMenu(isSubMenu):
 	global ACTUAL_MENU_ITEM, ACTUAL_SUBMENU_ITEM
 	global MAX_MAINMENU_ITEMS
+	global MENU_CHANGED_TIME, MENU_SHOW_TIME
 	if isSubMenu == 0:
 		ACTUAL_SUBMENU_ITEM = 0 # Reset the actual submenu item.
 		ACTUAL_MENU_ITEM = ACTUAL_MENU_ITEM + 1
@@ -84,6 +91,8 @@ def advanceMenu(isSubMenu):
 			ACTUAL_MENU_ITEM = 0
 	else:
 		ACTUAL_SUBMENU_ITEM = ACTUAL_SUBMENU_ITEM + 1
+
+	MENU_CHANGED_TIME = MENU_SHOW_TIME		
 	print("Menu selection: "+str(ACTUAL_MENU_ITEM)+" Submenu: "+str(ACTUAL_SUBMENU_ITEM))
 
 # LED strip configuration:
@@ -168,14 +177,31 @@ def clearScreen(strip, clearcolor):
 		strip.setPixelColor(i, clearcolor)
 	#strip.show()
 
+# render the menu.
+def renderMenu(strip):
+	global ACTUAL_MENU_ITEM, MAX_MAINMENU_ITEMS
+	m = ACTUAL_MENU_ITEM
+	menucolor = Color(126,255,0)
+	bordercolor = Color(0,255,0)
+	# maybe draw a border.
+	if MAX_MAINMENU_ITEMS<12:
+		# advance the LED by one.
+		m = ACTUAL_MENU_ITEM+1
+		# light up the first "left" border.
+		strip.setPixelColor(0,bordercolor)
+		if MAX_MAINMENU_ITEMS<11:
+			strip.setPixelColor(MAX_MAINMENU_ITEMS+1, bordercolor)
+
+	# show the menu indicator.
+	if ACTUAL_MENU_ITEM >= 0 and ACTUAL_MENU_ITEM < SCREEN_COUNT_PRE:
+		strip.setPixelColor(m, menucolor)
+	
 # Render the background image.
 actualPreLed = 0
 actualPreLedColor = Color(0,0,255)
 def renderBackground(strip):
 	global actualPreLed
 	global actualPreLedColor
-	# just clear the screen. You could also do....other stuff here.
-	clearScreen(strip, Color(0,0,0))
 	# create some stuff for the wheel.
 	strip.setPixelColor(actualPreLed,actualPreLedColor)
 	actualPreLed=actualPreLed-1
@@ -257,10 +283,18 @@ if __name__ == '__main__':
 			#renderArray(strip,font_render,px,2)
 			# render the background.
 			updateGPIOButtons()
-			renderBackground(strip)
-			# render the foreground.
-			renderForeground(strip)
-			
+			# clear the screen with black.
+			clearScreen(strip, Color(0,0,0))
+			if(MENU_CHANGED_TIME > 0.0):
+				renderMenu(strip)
+				MENU_CHANGED_TIME = MENU_CHANGED_TIME - PIXELWAITTIME
+			else:
+				renderBackground(strip)
+				renderForeground(strip)
+
+			if(MENU_CHANGED_TIME<0.0):
+				MENU_CHANGED_TIME = 0
+				
 			# finally show the strip and wait some time.
 			strip.show()
 			time.sleep(PIXELWAITTIME)

@@ -94,5 +94,8 @@ sudo git clone https://github.com/ben0bi/BeCal.git
 
 Make a redirecting index.html in /var/www/html which redirects to BeCal/index.html
 
-DB Setup....to be done.
+SQL:
+sudo apt-get install python-mysql
+pip install python-sql
+
 
