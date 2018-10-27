@@ -39,14 +39,22 @@ BCM_BTNPRESS_MAINMENU = 0	# Is the button already down?
 BCM_BTNPRESS_SUBMENU = 0	# -"- ?
 
 # Menu item stuff.
-ACTUAL_MENU_ITEM = 0 	# Which menu is acutally on?
-MAX_MAINMENU_ITEMS = 4  # the maximum main menu items.
+ACTUAL_MENU_ITEM = -1 	# Which menu is acutally on? Set to -1 for first first, else it is second first (at start of program)
 ACTUAL_SUBMENU_ITEM = 0 # Same for the submenu.
 
 # Menu Variables for display.
 MENU_SHOW_TIME = 2.0	# How many seconds to show the menu entry?
 MENU_CHANGED_TIME = 0.0	# Set the seconds to show the menu here.
 # It will count down to 0 and then show the function.
+
+# MAINMENU ITEMS:
+# Name, Symbol
+MAINMENU_ARRAY = [
+["Time","0"],
+["Date","1"],
+["Calendar", "2"],
+["Solar System","3"]
+]
 
 # initialize the GPIO buttons.
 def initGPIO():
@@ -82,16 +90,22 @@ def updateGPIOButtons():
 # advance the menu.
 def advanceMenu(isSubMenu):
 	global ACTUAL_MENU_ITEM, ACTUAL_SUBMENU_ITEM
-	global MAX_MAINMENU_ITEMS
+	global MAINMENU_ARRAY
 	global MENU_CHANGED_TIME, MENU_SHOW_TIME
+	global symbol_render, symbol_width
+	
 	if isSubMenu == 0:
 		ACTUAL_SUBMENU_ITEM = 0 # Reset the actual submenu item.
 		ACTUAL_MENU_ITEM = ACTUAL_MENU_ITEM + 1
-		if ACTUAL_MENU_ITEM >= MAX_MAINMENU_ITEMS:
+		if ACTUAL_MENU_ITEM >= len(MAINMENU_ARRAY):
 			ACTUAL_MENU_ITEM = 0
 	else:
 		ACTUAL_SUBMENU_ITEM = ACTUAL_SUBMENU_ITEM + 1
 
+	# create the symbol for the menu.
+	symbol_render = buildSymbolArray_x_3(MAINMENU_ARRAY[ACTUAL_MENU_ITEM][1]) # This is the Symbol below the main text.
+	symbol_width = len(symbol_render[0])
+	
 	MENU_CHANGED_TIME = MENU_SHOW_TIME		
 	print("Menu selection: "+str(ACTUAL_MENU_ITEM)+" Submenu: "+str(ACTUAL_SUBMENU_ITEM))
 
@@ -175,27 +189,42 @@ def clearScreen(strip, clearcolor):
 	"""Clear all pixels on the screen."""
 	for i in range(strip.numPixels()):
 		strip.setPixelColor(i, clearcolor)
-	#strip.show()
+	
+# get the text widths for floating.
+txt_width=len(font_render[0])
+foregroundx=SCREEN_COUNT_X+1
+
+symbol_width = len(symbol_render[0])
+symbolx = -symbol_width
 
 # render the menu.
 def renderMenu(strip):
-	global ACTUAL_MENU_ITEM, MAX_MAINMENU_ITEMS
+	global ACTUAL_MENU_ITEM
+	global MAINMENU_ARRAY
+	global symbol_render
+
 	m = ACTUAL_MENU_ITEM
+	max = len(MAINMENU_ARRAY)
+	
 	menucolor = Color(126,255,0)
 	bordercolor = Color(0,255,0)
 	# maybe draw a border.
-	if MAX_MAINMENU_ITEMS<12:
+	if max<12:
 		# advance the LED by one.
 		m = ACTUAL_MENU_ITEM+1
 		# light up the first "left" border.
 		strip.setPixelColor(0,bordercolor)
-		if MAX_MAINMENU_ITEMS<11:
-			strip.setPixelColor(MAX_MAINMENU_ITEMS+1, bordercolor)
+		if max<11:
+			strip.setPixelColor(max+1, bordercolor)
 
 	# show the menu indicator.
 	if ACTUAL_MENU_ITEM >= 0 and ACTUAL_MENU_ITEM < SCREEN_COUNT_PRE:
 		strip.setPixelColor(m, menucolor)
-	
+
+	# create the mask with the symbol and draw it.
+	symask = createFlatScreenMask(symbol_render, 0, 6)
+	renderPaletteTransparent(strip,symask)
+		
 # Render the background image.
 actualPreLed = 0
 actualPreLedColor = Color(0,0,255)
@@ -210,13 +239,6 @@ def renderBackground(strip):
 	return 0
 
 # PART OF EXAMPLE: BUILD THE TEXT ARRAY
-
-# get the text widths for floating.
-txt_width=len(font_render[0])
-symbol_width = len(symbol_render[0])
-
-foregroundx=SCREEN_COUNT_X+1
-symbolx = -symbol_width
 
 def renderForeground(strip):
 	# we will show the time in fancy rainbow colours here.

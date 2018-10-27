@@ -55,8 +55,14 @@ def buildSymbolArray_x_3(text):
 # This one will be returned directly.
 symbols_x_3_font_notfound = [
 [0,0,0,0],
-[0,1,0,0],
+[0,4,0,0],
 [0,0,0,0]
+]
+
+font_PALETTE = [
+[1,2,3,4,5,6,7,8,9,0],
+[1,2,3,4,5,6,7,8,9,0],
+[1,2,3,4,5,6,7,8,9,0]
 ]
 
 # These characters will be added to the FONT array.
@@ -80,18 +86,6 @@ font_DAT = [
 [1,1,0,0,1,1,1,0,0,1,0,0]
 ]
 
-font_PALETTE = [
-[1,2,3,4,5,6,7,8,9,0],
-[1,2,3,4,5,6,7,8,9,0],
-[1,2,3,4,5,6,7,8,9,0]
-]
-
-font_SOLSYS = [
-[0,2,0,0,0,0,0,0,0,0,0,0],
-[2,2,2,0,2,0,1,0,8,0,4,0],
-[0,2,0,0,0,0,0,0,0,0,0,0]
-]
-
 font_SOLSYS = [
 [0,2,0,0,0,0,0,0,0,0],
 [2,2,2,0,1,0,7,0,4,0],
@@ -111,4 +105,4 @@ symbols_x_3_FIDX.extend(('P',' ','0','1','2','3'))
 
 # The real character arrays are in the FONT array.
 symbols_x_3_FONT=[]
-symbols_x_3_FONT.extend((font_PALETTE, font_SPACE, font_CAL,font_TIM,font_DAT,font_SOLSYS))
+symbols_x_3_FONT.extend((font_PALETTE, font_SPACE, font_TIM,font_DAT,font_CAL,font_SOLSYS))
