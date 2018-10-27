@@ -21,93 +21,15 @@ import time
 from neopixel import *
 import argparse
 
-import RPi.GPIO as GPIO
-
 from BeLEDLib import *
+import BeGPIOMenu as MENU
 
 #from BeFont_x_6 import getCharArray_x_6
 from BeFont_x_6 import buildTextArray_x_6
-from BeSymbols_x_3 import buildSymbolArray_x_3
+from BeSymbols_x_4 import buildSymbolArray_x_4
 
 font_render = buildTextArray_x_6('III: Gaia    ') # This is the main x_6 font text, in rainbow colors.
-symbol_render = buildSymbolArray_x_3('3')		  # This is the Symbol below the main text.
-
-# The GPIO BCM numbers of the buttons to switch trough the menu items.
-BCM_BTN_MAINMENU = 17		# Button number for the main menu
-BCM_BTN_SUBMENU = 27		# Button number for the submenu
-BCM_BTNPRESS_MAINMENU = 0	# Is the button already down?
-BCM_BTNPRESS_SUBMENU = 0	# -"- ?
-
-# Menu item stuff.
-ACTUAL_MENU_ITEM = -1 	# Which menu is acutally on? Set to -1 for first first, else it is second first (at start of program)
-ACTUAL_SUBMENU_ITEM = 0 # Same for the submenu.
-
-# Menu Variables for display.
-MENU_SHOW_TIME = 2.0	# How many seconds to show the menu entry?
-MENU_CHANGED_TIME = 0.0	# Set the seconds to show the menu here.
-# It will count down to 0 and then show the function.
-
-# MAINMENU ITEMS:
-# Name, Symbol
-MAINMENU_ARRAY = [
-["Time","0"],
-["Date","1"],
-["Calendar", "2"],
-["Solar System","3"]
-]
-
-# initialize the GPIO buttons.
-def initGPIO():
-	global BCM_BTN_MAINMENU, BCM_BTN_SUBMENU
-	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(BCM_BTN_MAINMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-	GPIO.setup(BCM_BTN_SUBMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-	print ("GPIO setup done.")
-
-# update the GPIO buttons and switch through the menus.
-def updateGPIOButtons():
-	global BCM_BTN_MAINMENU, BCM_BTN_SUBMENU
-	global BCM_BTNPRESS_MAINMENU, BCM_BTNPRESS_SUBMENU
-	# get the buttons.
-	btn_mm = GPIO.input(BCM_BTN_MAINMENU)
-	btn_sm = GPIO.input(BCM_BTN_SUBMENU)
-	# check them and do something.
-	# check for the main menu.
-	if btn_mm==1: # is the mainmenu button down?
-		if BCM_BTNPRESS_MAINMENU == 0: # only do it once.
-			advanceMenu(0)
-		BCM_BTNPRESS_MAINMENU = 1 # set the button as pressed.
-	else:
-		BCM_BTNPRESS_MAINMENU = 0 # reset the button
-	# same with the submenu.
-	if btn_sm==1: # is the mainmenu button down?
-		if BCM_BTNPRESS_SUBMENU == 0: # only do it once.
-			advanceMenu(1)
-		BCM_BTNPRESS_SUBMENU = 1 # set the button as pressed.
-	else:
-		BCM_BTNPRESS_SUBMENU = 0 # reset the button
-
-# advance the menu.
-def advanceMenu(isSubMenu):
-	global ACTUAL_MENU_ITEM, ACTUAL_SUBMENU_ITEM
-	global MAINMENU_ARRAY
-	global MENU_CHANGED_TIME, MENU_SHOW_TIME
-	global symbol_render, symbol_width
-	
-	if isSubMenu == 0:
-		ACTUAL_SUBMENU_ITEM = 0 # Reset the actual submenu item.
-		ACTUAL_MENU_ITEM = ACTUAL_MENU_ITEM + 1
-		if ACTUAL_MENU_ITEM >= len(MAINMENU_ARRAY):
-			ACTUAL_MENU_ITEM = 0
-	else:
-		ACTUAL_SUBMENU_ITEM = ACTUAL_SUBMENU_ITEM + 1
-
-	# create the symbol for the menu.
-	symbol_render = buildSymbolArray_x_3(MAINMENU_ARRAY[ACTUAL_MENU_ITEM][1]) # This is the Symbol below the main text.
-	symbol_width = len(symbol_render[0])
-	
-	MENU_CHANGED_TIME = MENU_SHOW_TIME		
-	print("Menu selection: "+str(ACTUAL_MENU_ITEM)+" Submenu: "+str(ACTUAL_SUBMENU_ITEM))
+symbol_render = buildSymbolArray_x_4('3')		  # This is the Symbol below the main text.
 
 # LED strip configuration:
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
@@ -199,30 +121,29 @@ symbolx = -symbol_width
 
 # render the menu.
 def renderMenu(strip):
-	global ACTUAL_MENU_ITEM
-	global MAINMENU_ARRAY
 	global symbol_render
 
-	m = ACTUAL_MENU_ITEM
-	max = len(MAINMENU_ARRAY)
+	itm = MENU.getActualMenuItem()
+	m = itm
+	max = MENU.getMainMenuCount()
 	
 	menucolor = Color(126,255,0)
 	bordercolor = Color(0,255,0)
 	# maybe draw a border.
 	if max<12:
 		# advance the LED by one.
-		m = ACTUAL_MENU_ITEM+1
+		m = itm+1
 		# light up the first "left" border.
 		strip.setPixelColor(0,bordercolor)
 		if max<11:
 			strip.setPixelColor(max+1, bordercolor)
 
 	# show the menu indicator.
-	if ACTUAL_MENU_ITEM >= 0 and ACTUAL_MENU_ITEM < SCREEN_COUNT_PRE:
+	if m >= 0 and m < SCREEN_COUNT_PRE:
 		strip.setPixelColor(m, menucolor)
 
-	# create the mask with the symbol and draw it.
-	symask = createFlatScreenMask(symbol_render, 0, 6)
+	# draw the mask with the symbol.
+	symask = createFlatScreenMask(symbol_render, 0, 5)
 	renderPaletteTransparent(strip,symask)
 		
 # Render the background image.
@@ -262,7 +183,7 @@ def renderForeground(strip):
 	# create the mask for the upper text.
 	mask = createFlatScreenMask(font_render,foregroundx,0)
 	# create the mask for the lower symbol text.
-	mask2 = createFlatScreenMask(symbol_render, 0, 6)
+	mask2 = createFlatScreenMask(symbol_render, 0, 5)
 	# combine the masks.
 	#combinedmask = combineFlatScreenMasks_OR(mask,mask2)
 	
@@ -289,7 +210,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
     args = parser.parse_args()
-    initGPIO()
+	
+	# initialize the menu GPIO stuff.
+    MENU.initGPIO()
 	
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
@@ -304,25 +227,30 @@ if __name__ == '__main__':
 		while True:
 			#renderArray(strip,font_render,px,2)
 			# render the background.
-			updateGPIOButtons()
+			MENU.updateGPIOButtons()
+			
+			# the main menu changed, get the right symbol and stuff.
+			if MENU.menuHasChanged() > 0:
+				# create the symbol for the menu.
+				symbol_render = buildSymbolArray_x_4(MENU.MAINMENU_ARRAY[MENU.ACTUAL_MENU_ITEM][1]) # This is the Symbol below the main text.
+				symbol_width = len(symbol_render[0])
+			
 			# clear the screen with black.
 			clearScreen(strip, Color(0,0,0))
-			if(MENU_CHANGED_TIME > 0.0):
+			# show menu or function.
+			if(MENU.getMenuChangeTime() > 0.0):
 				renderMenu(strip)
-				MENU_CHANGED_TIME = MENU_CHANGED_TIME - PIXELWAITTIME
 			else:
 				renderBackground(strip)
 				renderForeground(strip)
-
-			if(MENU_CHANGED_TIME<0.0):
-				MENU_CHANGED_TIME = 0
 				
 			# finally show the strip and wait some time.
 			strip.show()
+			MENU.updateMenuChangeTime(PIXELWAITTIME)
 			time.sleep(PIXELWAITTIME)
-
+						
     except KeyboardInterrupt:
         if args.clear:
             clearScreen(strip, Color(0,0,0))
             strip.show()
-            GPIO.cleanup()
+            MENU.cleanupGPIO()
