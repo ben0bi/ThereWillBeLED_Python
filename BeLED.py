@@ -28,8 +28,13 @@ import BeGPIOMenu as MENU
 from BeFont_x_6 import buildTextArray_x_6
 from BeSymbols_x_4 import buildSymbolArray_x_4
 
-font_render = buildTextArray_x_6('III: Gaia    ') # This is the main x_6 font text, in rainbow colors.
+font_render = buildTextArray_x_6('Welcome to BeLED!') # This is the main x_6 font text, in rainbow colors.
 symbol_render = buildSymbolArray_x_4('3')		  # This is the Symbol below the main text.
+
+# get the text widths for floating.
+g_textWidth=len(font_render[0])
+g_textX=SCREEN_COUNT_X+1
+
 
 # LED strip configuration:
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
@@ -91,7 +96,7 @@ def rainbowCycle(strip, maskarray):
 		
 def renderPaletteTransparent(strip, maskarray):
 	"""Draw a mask with the palette colours for their corresponding numbers.
-		ATTENTION: This function usses a FLAT mask.
+		ATTENTION: This function uses a FLAT mask.
 		0 values will NOT be blacked out."""
 	for i in range(SCREEN_COUNT_PRE,SCREEN_END_POSITION):
 		# Here we check for the mask. i must be greater than the preled count and smaller than the screen end position.
@@ -104,6 +109,22 @@ def renderPaletteTransparent(strip, maskarray):
 					col = BeLED_Palette[m]
 					strip.setPixelColor(i,col)
 
+def renderSingleColorTransparent(strip,maskarray,rendercolor):
+	"""Draw a mask with the given colour for each number > 0.
+		ATTENTION: This function uses a FLAT mask.
+		0 values will NOT be blacked out."""
+	for i in range(SCREEN_COUNT_PRE,SCREEN_END_POSITION):
+		# Here we check for the mask. i must be greater than the preled count and smaller than the screen end position.
+		# Both are defined in the library file.
+		if i>=SCREEN_COUNT_PRE and i<SCREEN_END_POSITION:
+			maskpos = i-SCREEN_COUNT_PRE # mask position has no Pre-LED indexes so we subtract these.
+			if maskpos>=0 and maskpos<len(maskarray):
+				m = maskarray[maskpos]
+				if m>0: # colour only if the mask at this position is set.
+					col = BeLED_Palette[m]
+					strip.setPixelColor(i,rendercolor)
+
+
 ###### RENDER FUNCTIONS ##########################
 
 # clear all pixels
@@ -111,13 +132,6 @@ def clearScreen(strip, clearcolor):
 	"""Clear all pixels on the screen."""
 	for i in range(strip.numPixels()):
 		strip.setPixelColor(i, clearcolor)
-	
-# get the text widths for floating.
-txt_width=len(font_render[0])
-foregroundx=SCREEN_COUNT_X+1
-
-symbol_width = len(symbol_render[0])
-symbolx = -symbol_width
 
 # render the menu.
 def renderMenu(strip):
@@ -146,31 +160,78 @@ def renderMenu(strip):
 	symask = createFlatScreenMask(symbol_render, 0, 5)
 	renderPaletteTransparent(strip,symask)
 		
-# Render the background image.
-actualPreLed = 0
-actualPreLedColor = Color(0,0,255)
-def renderBackground(strip):
-	global actualPreLed
-	global actualPreLedColor
-	# create some stuff for the wheel.
-	strip.setPixelColor(actualPreLed,actualPreLedColor)
-	actualPreLed=actualPreLed-1
-	if actualPreLed<0:
-		actualPreLed=11
-	return 0
 
-# PART OF EXAMPLE: BUILD THE TEXT ARRAY
+# render the stuff for the actual function.
+LIGHTCONE_FLATMASK = [
+0,0,0,0,3,3,0,0,0,0,
+0,0,0,3,3,3,3,0,0,0,
+0,0,3,3,2,2,3,3,0,0,
+0,3,3,2,2,2,2,3,3,0,
+3,3,2,2,1,1,2,2,3,3,
+3,3,2,2,1,1,2,2,3,3,
+0,3,3,2,2,2,2,3,3,0,
+0,0,3,3,2,2,3,3,0,0,
+0,0,0,3,3,3,3,0,0,0,
+0,0,0,0,3,3,0,0,0,0,
+]
 
-def renderForeground(strip):
-	# we will show the time in fancy rainbow colours here.
-	global foregroundx
-	global symbolx
-	#global oldtime
-	global symbol_width
-	global txt_width
+# save the submenu in the lights function?
+ACTUAL_LIGHT_ITEM = 0
+
+SHOW_WELCOME_SCREEN_REPEATS = 3 # show welcome screen for 5 seconds.
+
+def renderFunction(strip):
+	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
+	global SHOW_WELCOME_SCREEN_REPEATS	# how many repeats of the welcome screen?
+	global SCREEN_COUNT_X
+	global g_textX, g_textWidth
 	global font_render
-	global symbol_render
 
+	global ACTUAL_LIGHT_ITEM
+	
+	if SHOW_WELCOME_SCREEN_REPEATS>0:
+		#SHOW_WELCOME_SCREEN_TIME = SHOW_WELCOME_SCREEN_TIME-PIXELWAITTIME
+		mask = createFlatScreenMask(font_render,g_textX,2)
+		g_textX = g_textX-1
+		if g_textX < -g_textWidth:
+			g_textX = SCREEN_COUNT_X+1
+			SHOW_WELCOME_SCREEN_REPEATS=SHOW_WELCOME_SCREEN_REPEATS-1
+		rainbowCycle(strip, mask)
+		return
+		
+	# get the actual function to draw.
+	func = MENU.getActualMenuItemFunction()
+	
+	# show nothing.
+	if func=="off":
+		# todo: maybe show next calendar entry here.
+		return
+
+	# just some lights.
+	if func=="light":
+		s=MENU.getActualSubmenuItem()
+		if s>=27: #triple the fun
+			MENU.setActualSubmenuItem(0)
+			s=0
+		ACTUAL_LIGHT_ITEM = s
+		# get the palette color.
+		pc = s%9
+		palettecol = BeLED_Palette[pc+1] # palette 0 = black
+		# three modes with 9 colors each, what a funny splashy fun thingie.
+		if s <= 18:
+			for i in range(SCREEN_COUNT_PRE):
+				strip.setPixelColor(i,palettecol)
+		if s<=9 or s>18:
+			renderSingleColorTransparent(strip,LIGHTCONE_FLATMASK,palettecol)
+			
+	# create some stuff for the wheel.
+	#strip.setPixelColor(actualPreLed,actualPreLedColor)
+	#actualPreLed=actualPreLed-1
+	#if actualPreLed<0:
+	#	actualPreLed=11
+
+	# todo: make the functions here.	
+		
 	# get the current time.
 	#currenttime = time.ctime(time.time())
 	#if(oldtime!=currenttime):
@@ -181,25 +242,25 @@ def renderForeground(strip):
 		#txt_width = len(timearray[0])
 # BeLED EXAMPLE
 	# create the mask for the upper text.
-	mask = createFlatScreenMask(font_render,foregroundx,0)
+#	mask = createFlatScreenMask(font_render,foregroundx,0)
 	# create the mask for the lower symbol text.
-	mask2 = createFlatScreenMask(symbol_render, 0, 5)
+#	mask2 = createFlatScreenMask(symbol_render, 0, 5)
 	# combine the masks.
 	#combinedmask = combineFlatScreenMasks_OR(mask,mask2)
 	
 	# rainbow the masks on the strip, du weisch scho, s rägeboge chotzende internetz-einhorn :)
-	rainbowCycle(strip, mask)
-	renderPaletteTransparent(strip,mask2)
+#	rainbowCycle(strip, mask)
+#	renderPaletteTransparent(strip,mask2)
 	
 	# set/reset text position
-	foregroundx=foregroundx-1
-	if foregroundx <= -txt_width:
-		foregroundx=SCREEN_COUNT_X+1
+#	foregroundx=foregroundx-1
+#	if foregroundx <= -txt_width:
+#		foregroundx=SCREEN_COUNT_X+1
 		
 	# set/reset symbol position.
-	symbolx=symbolx+1
-	if symbolx > SCREEN_COUNT_X:
-		symbolx = -symbol_width
+#	symbolx=symbolx+1
+#	if symbolx > SCREEN_COUNT_X:
+#		symbolx = -symbol_width
 
 # Aaand done. :)
 	return 0
@@ -234,15 +295,22 @@ if __name__ == '__main__':
 				# create the symbol for the menu.
 				symbol_render = buildSymbolArray_x_4(MENU.MAINMENU_ARRAY[MENU.ACTUAL_MENU_ITEM][1]) # This is the Symbol below the main text.
 				symbol_width = len(symbol_render[0])
+				# stop the welcome screen when menu changed.
+				SHOW_WELCOME_SCREEN_REPEATS = 0
+				# get the actual function to draw.
+				func = MENU.getActualMenuItemFunction()
+				# set submenu parameters
+				if func == "light":
+					MENU.setActualSubmenuItem(ACTUAL_LIGHT_ITEM)
 			
 			# clear the screen with black.
 			clearScreen(strip, Color(0,0,0))
+
 			# show menu or function.
 			if(MENU.getMenuChangeTime() > 0.0):
 				renderMenu(strip)
 			else:
-				renderBackground(strip)
-				renderForeground(strip)
+				renderFunction(strip)
 				
 			# finally show the strip and wait some time.
 			strip.show()

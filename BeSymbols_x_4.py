@@ -106,6 +106,13 @@ font_SOLSYS = [
 [0,2,0,0,0,0,0,0,0,0]
 ]
 
+font_LIGHT = [
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,3,2,2,3,0,0,0],
+[0,0,3,2,1,1,2,3,0,0],
+[0,0,0,3,2,2,3,0,0,0]
+]
+
 font_SPACE = [
 [0,0,0],
 [0,0,0],
@@ -120,4 +127,4 @@ symbols_x_4_FIDX.extend(('P',' ','0','1','2','3','4'))
 
 # The real character arrays are in the FONT array.
 symbols_x_4_FONT=[]
-symbols_x_4_FONT.extend((font_PALETTE, font_SPACE, font_OFF, font_TIM,font_DAT,font_CAL,font_SOLSYS))
+symbols_x_4_FONT.extend((font_PALETTE, font_SPACE, font_OFF, font_TIM, font_CAL, font_SOLSYS, font_LIGHT))

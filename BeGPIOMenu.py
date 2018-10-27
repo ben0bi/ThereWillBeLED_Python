@@ -6,11 +6,11 @@ import RPi.GPIO as GPIO
 # MAINMENU ITEMS:
 # Name, Symbol, Function (State)
 MAINMENU_ARRAY = [
-["OFF","0",1],
-["Clock","1",0],
-["Calendar", "2",2],
-["Solar System","3",3],
-["Light","4",1]
+["OFF","0","off"],
+["Clock","1","clock"],
+["Calendar", "2","calendar"],
+["Solar System","3","solsystem"],
+["Light","4","light"]
 ]
 
 # The GPIO BCM numbers of the buttons to switch trough the menu items.
@@ -20,8 +20,8 @@ BCM_BTNPRESS_MAINMENU = 0	# Is the button already down?
 BCM_BTNPRESS_SUBMENU = 0	# -"- ?
 
 # Menu item stuff.
-ACTUAL_MENU_ITEM = -1 	# Which menu is acutally on? Set to -1 for first first, else it is second first (at start of program)
-OLD_MENU_ITEM = -1		# Does the symbol and other stuff have to change?
+ACTUAL_MENU_ITEM = 0 	# Which menu is acutally on? Set to -1 for first first, else it is second first (at start of program)
+OLD_MENU_ITEM = 0		# Does the symbol and other stuff have to change?
 ACTUAL_SUBMENU_ITEM = 0 # Same for the submenu.
 
 # Menu Variables for display.
@@ -75,10 +75,11 @@ def advanceMenu(isSubMenu):
 		ACTUAL_MENU_ITEM = ACTUAL_MENU_ITEM + 1
 		if ACTUAL_MENU_ITEM >= len(MAINMENU_ARRAY):
 			ACTUAL_MENU_ITEM = 0
+		MENU_CHANGED_TIME = MENU_SHOW_TIME		
 	else:
 		ACTUAL_SUBMENU_ITEM = ACTUAL_SUBMENU_ITEM + 1
+		MENU_CHANGED_TIME = 0 # Just continue when pressed.
 	
-	MENU_CHANGED_TIME = MENU_SHOW_TIME		
 	print("Menu selection: "+str(ACTUAL_MENU_ITEM)+" Submenu: "+str(ACTUAL_SUBMENU_ITEM))
 
 # return the changetime. If >0, render the menu.
@@ -98,6 +99,25 @@ def updateMenuChangeTime(frametime):
 def getActualMenuItem():
 	global ACTUAL_MENU_ITEM
 	return ACTUAL_MENU_ITEM
+
+# return the actual menu item function
+def getActualMenuItemFunction():
+	global ACTUAL_MENU_ITEM, MAINMENU_ARRAY
+	if ACTUAL_MENU_ITEM<0:
+		return -1
+	# return the button state.
+	return MAINMENU_ARRAY[ACTUAL_MENU_ITEM][2]	
+
+# return the actual sub menu item
+def getActualSubmenuItem():
+	global ACTUAL_SUBMENU_ITEM
+	return ACTUAL_SUBMENU_ITEM
+	
+# set the submenu item.
+def setActualSubmenuItem(itm):
+	global ACTUAL_SUBMENU_ITEM
+	ACTUAL_SUBMENU_ITEM = itm
+	return ACTUAL_SUBMENU_ITEM
 	
 # return the count of items in the main menu.
 def getMainMenuCount():
