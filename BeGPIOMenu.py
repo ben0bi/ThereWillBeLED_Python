@@ -6,11 +6,11 @@ import RPi.GPIO as GPIO
 # MAINMENU ITEMS:
 # Name, Symbol, Function (State)
 MAINMENU_ARRAY = [
-["OFF","0","off"],
-["Clock","1","clock"],
+[" ","0","off"],		# off has no text
+[" Clock  ","1","clock"],
 ["Calendar", "2","calendar"],
-["Solar System","3","solsystem"],
-["Light","4","light"]
+["Sol.Sys.","3","solsystem"],
+[" Light  ","4","light"]
 ]
 
 # The GPIO BCM numbers of the buttons to switch trough the menu items.

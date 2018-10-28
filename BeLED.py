@@ -135,6 +135,23 @@ def renderSingleColorTransparent(strip,maskarray,rendercolor):
 					strip.setPixelColor(i,rendercolor)
 
 
+# update the text x.
+def updateTextX():
+	global g_textX, g_textWidth, SCREEN_COUNT_X
+	g_textX = g_textX - 1
+	if g_textX < -g_textWidth:
+		g_textX = SCREEN_COUNT_X + 1
+
+# reset the text x.		
+def setRenderText(txt):
+	global g_textX, g_textWidth
+	global font_render
+	global SCREEN_COUNT_X
+	
+	g_textX = SCREEN_COUNT_X+1
+	font_render = buildTextArray_x_6(txt)
+	g_textWidth = len(font_render[0])
+	
 ###### RENDER FUNCTIONS ##########################
 
 # clear all pixels
@@ -146,7 +163,8 @@ def clearScreen(strip, clearcolor):
 # render the menu.
 def renderMenu(strip):
 	global symbol_render
-
+	global g_textX, font_render
+	
 	itm = MENU.getActualMenuItem()
 	m = itm
 	max = MENU.getMainMenuCount()
@@ -169,7 +187,13 @@ def renderMenu(strip):
 	# draw the mask with the symbol.
 	symask = createFlatScreenMask(symbol_render, 0, 5)
 	renderPaletteTransparent(strip,symask)
-		
+
+	# draw the menu text.
+	txtmask = createFlatScreenMask(font_render,g_textX,0)	
+	rainbowCycle(strip, txtmask)
+	
+	updateTextX()
+	
 
 # render the stuff for the actual function.
 LIGHTCONE_FLATMASK = [
@@ -214,17 +238,15 @@ def renderTimeFunction(strip):
 		# show time
 		#if s==0:
 		tt=time.strftime('%H:%M', current_time)
-		if(g_oldtime!=tt):
+		if(g_oldtime!=current_time):
 			font_render = buildTextArray_x_6(tt) # create the text array.
-			g_oldtime = tt
+			g_oldtime = current_time
 			g_textWidth = len(font_render[0])	
 		# show date
 		#if s==1:
 
 		# set text x.
-		g_textX=g_textX-1
-		if g_textX < -g_textWidth:
-			g_textX = SCREEN_COUNT_X+1
+		updateTextX()
 		
 		# render text to strip.
 		mask = createFlatScreenMask(font_render, g_textX, 0)
@@ -232,8 +254,8 @@ def renderTimeFunction(strip):
 		renderPaletteTransparent(strip, g_symbolmask)
 			
 		# show time on wheel
-		clockcol = Color(127,255,0)
-		minutecol = Color(0,0,255)
+		clockcol = BeLED_Palette[3]
+		minutecol = BeLED_Palette[8]
 		th=int(time.strftime('%H', current_time))
 		tm=int(time.strftime('%M',current_time))
 		if tm > 0:
@@ -242,8 +264,8 @@ def renderTimeFunction(strip):
 			th = th-12
 		if th == 12:
 			th = 0 
-		strip.setPixelColor(th,clockcol)
 		strip.setPixelColor(tm,minutecol)
+		strip.setPixelColor(th,clockcol)
 		
 def renderFunction(strip):
 	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
@@ -301,44 +323,6 @@ def renderFunction(strip):
 	if func=="clock":
 		renderTimeFunction(strip)
 
-	# create some stuff for the wheel.
-	#strip.setPixelColor(actualPreLed,actualPreLedColor)
-	#actualPreLed=actualPreLed-1
-	#if actualPreLed<0:
-	#	actualPreLed=11
-
-	# todo: make the functions here.	
-		
-	# get the current time.
-	#currenttime = time.ctime(time.time())
-	#if(oldtime!=currenttime):
-		# maybe build a new time array.
-# PART OF EXAMPLE: BUILD THE TEXT ARRAY
-#		timearray = buildTextArray_x_6(currenttime) # create the text array.
-		#oldtime = currenttime
-		#txt_width = len(timearray[0])
-# BeLED EXAMPLE
-	# create the mask for the upper text.
-#	mask = createFlatScreenMask(font_render,foregroundx,0)
-	# create the mask for the lower symbol text.
-#	mask2 = createFlatScreenMask(symbol_render, 0, 5)
-	# combine the masks.
-	#combinedmask = combineFlatScreenMasks_OR(mask,mask2)
-	
-	# rainbow the masks on the strip, du weisch scho, s rägeboge chotzende internetz-einhorn :)
-#	rainbowCycle(strip, mask)
-#	renderPaletteTransparent(strip,mask2)
-	
-	# set/reset text position
-#	foregroundx=foregroundx-1
-#	if foregroundx <= -txt_width:
-#		foregroundx=SCREEN_COUNT_X+1
-		
-	# set/reset symbol position.
-#	symbolx=symbolx+1
-#	if symbolx > SCREEN_COUNT_X:
-#		symbolx = -symbol_width
-
 # Aaand done. :)
 	return 0
 
@@ -372,6 +356,7 @@ if __name__ == '__main__':
 				# create the symbol for the menu.
 				symbol_render = buildSymbolArray_x_4(MENU.MAINMENU_ARRAY[MENU.ACTUAL_MENU_ITEM][1]) # This is the Symbol below the main text.
 				symbol_width = len(symbol_render[0])
+				setRenderText(MENU.MAINMENU_ARRAY[MENU.ACTUAL_MENU_ITEM][0])
 				# stop the welcome screen when menu changed.
 				SHOW_WELCOME_SCREEN_REPEATS = 0
 				# get the actual function to draw.
