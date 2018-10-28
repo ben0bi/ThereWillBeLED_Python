@@ -28,13 +28,23 @@ import BeGPIOMenu as MENU
 from BeFont_x_6 import buildTextArray_x_6
 from BeSymbols_x_4 import buildSymbolArray_x_4
 
-font_render = buildTextArray_x_6('Welcome to BeLED!') # This is the main x_6 font text, in rainbow colors.
-symbol_render = buildSymbolArray_x_4('3')		  # This is the Symbol below the main text.
+# save the submenu in the lights function,
+# to get it back when the main function changes.
+ACTUAL_LIGHT_ITEM = 0
+
+# how many repeats of the welcome screen?
+SHOW_WELCOME_SCREEN_REPEATS = 3
+
+font_render = buildTextArray_x_6('Welcome to BeLED!') 	# This is the main x_6 font text, in rainbow colors.
+symbol_render = buildSymbolArray_x_4('3')		  		# This is the Symbol below the main text.
+g_symbolmask = createFlatScreenMask(symbol_render,0,5)	# the mask for the symbol is global because it does not move.
 
 # get the text widths for floating.
 g_textWidth=len(font_render[0])
 g_textX=SCREEN_COUNT_X+1
 
+# time variables
+g_oldtime = ""
 
 # LED strip configuration:
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
@@ -163,23 +173,78 @@ def renderMenu(strip):
 
 # render the stuff for the actual function.
 LIGHTCONE_FLATMASK = [
-0,0,0,0,3,3,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
 0,0,0,3,3,3,3,0,0,0,
 0,0,3,3,2,2,3,3,0,0,
 0,3,3,2,2,2,2,3,3,0,
-3,3,2,2,1,1,2,2,3,3,
-3,3,2,2,1,1,2,2,3,3,
+0,3,2,2,1,1,2,2,3,0,
+0,3,2,2,1,1,2,2,3,0,
 0,3,3,2,2,2,2,3,3,0,
 0,0,3,3,2,2,3,3,0,0,
 0,0,0,3,3,3,3,0,0,0,
-0,0,0,0,3,3,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
 ]
 
-# save the submenu in the lights function?
-ACTUAL_LIGHT_ITEM = 0
+oldTimeSubmenu = -1
+def renderTimeFunction(strip):
+		global g_oldtime
+		global g_textWidth, g_textX, g_fontmask
+		global font_render, symbol_render, g_symbolmask
+		global oldTimeSubmenu
+		
+		s=MENU.getActualSubmenuItem()
+		#create the symbols
+		if oldTimeSubmenu!=s:
+			oldTimeSubmenu=s
+			if s==0:
+				symbol_render=buildSymbolArray_x_4('T')
+			if s==1:
+				symbol_render=buildSymbolArray_x_4('D')
+			g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
+			
+		# get the current time.
+#		currenttime = time.ctime(time.time())
+		current_time = time.localtime()
 
-SHOW_WELCOME_SCREEN_REPEATS = 3 # show welcome screen for 5 seconds.
+		# maybe reset submenu
+		if s>1:
+			MENU.setActualSubmenuItem(0)
+			s=0
 
+		# show time
+		#if s==0:
+		tt=time.strftime('%H:%M', current_time)
+		if(g_oldtime!=tt):
+			font_render = buildTextArray_x_6(tt) # create the text array.
+			g_oldtime = tt
+			g_textWidth = len(font_render[0])	
+		# show date
+		#if s==1:
+
+		# set text x.
+		g_textX=g_textX-1
+		if g_textX < -g_textWidth:
+			g_textX = SCREEN_COUNT_X+1
+		
+		# render text to strip.
+		mask = createFlatScreenMask(font_render, g_textX, 0)
+		rainbowCycle(strip, mask)
+		renderPaletteTransparent(strip, g_symbolmask)
+			
+		# show time on wheel
+		clockcol = Color(127,255,0)
+		minutecol = Color(0,0,255)
+		th=int(time.strftime('%H', current_time))
+		tm=int(time.strftime('%M',current_time))
+		if tm > 0:
+			tm=int((12.0/60.0)*tm)
+		if th>12:
+			th = th-12
+		if th == 12:
+			th = 0 
+		strip.setPixelColor(th,clockcol)
+		strip.setPixelColor(tm,minutecol)
+		
 def renderFunction(strip):
 	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
 	global SHOW_WELCOME_SCREEN_REPEATS	# how many repeats of the welcome screen?
@@ -210,20 +275,32 @@ def renderFunction(strip):
 	# just some lights.
 	if func=="light":
 		s=MENU.getActualSubmenuItem()
-		if s>=27: #triple the fun
+		if s>=29: # 29 light modes, yay
 			MENU.setActualSubmenuItem(0)
 			s=0
 		ACTUAL_LIGHT_ITEM = s
+		
 		# get the palette color.
-		pc = s%9
+		pc = (s-2)%9
 		palettecol = BeLED_Palette[pc+1] # palette 0 = black
-		# three modes with 9 colors each, what a funny splashy fun thingie.
-		if s <= 18:
+	
+		# original light cone light.
+		if s < 2:
+			renderPaletteTransparent(strip,LIGHTCONE_FLATMASK)
+			palettecol=BeLED_Palette[3]
+		
+		# draw outer circle
+		if s < 20 and s!=1:
 			for i in range(SCREEN_COUNT_PRE):
 				strip.setPixelColor(i,palettecol)
-		if s<=9 or s>18:
+		
+		# draw inner circle
+		if (s>=2 and s<=10) or s>=20:
 			renderSingleColorTransparent(strip,LIGHTCONE_FLATMASK,palettecol)
-			
+
+	if func=="clock":
+		renderTimeFunction(strip)
+
 	# create some stuff for the wheel.
 	#strip.setPixelColor(actualPreLed,actualPreLedColor)
 	#actualPreLed=actualPreLed-1
