@@ -209,11 +209,15 @@ LIGHTCONE_FLATMASK = [
 ]
 
 oldTimeSubmenu = -1
+smoothSeconds = 0.0
+oldTsmod = -1
+
 def renderTimeFunction(strip):
 		global g_oldtime
 		global g_textWidth, g_textX, g_fontmask
 		global font_render, symbol_render, g_symbolmask
 		global oldTimeSubmenu
+		global smoothSeconds, oldTsmod, PIXELWAITTIME
 		
 		maxTimeMenus = 3 # how many submenus has this function?
 		
@@ -225,7 +229,7 @@ def renderTimeFunction(strip):
 				symbol_render=buildSymbolArray_x_4('T')
 			if s==1:	# show date
 				symbol_render=buildSymbolArray_x_4('D')
-			if s==2:	# show ip
+			if s==2 or s==3:	# show only clock without anything other.
 				symbol_render = buildSymbolArray_x_4(' ')
 				
 			g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
@@ -239,16 +243,17 @@ def renderTimeFunction(strip):
 			MENU.setActualSubmenuItem(0)
 			s=0
 
+		# show time or date (text)
 		tt=""
-		# show time
 		if s==0:
 			tt=time.strftime('%H:%M', current_time)
 		# show date
 		if s==1:
 			tt=time.strftime('%d. %b %Y', current_time)
-		if s==2: # show only time on wheel.
+		if s==2 or s==3: # show only time on wheel.
 			tt=" "
-		
+
+		# maybe reset the text
 		if(g_oldtime!=tt):
 			font_render = buildTextArray_x_6(tt) # create the text array.
 			g_oldtime = tt
@@ -264,34 +269,47 @@ def renderTimeFunction(strip):
 			
 		# show time on wheel
 		# colors corresponding to the symbol colors (font_TIME)
-		if s==0 or s==2:
+		if s==0 or s==2 or s==3:
 			th=int(time.strftime('%I', current_time)) 	# get hour (1-12)
 			tm=int(time.strftime('%M',current_time))	# get minute (1-60)
 			tsec=int(time.strftime('%S',current_time))	# get second (1-60)
 			tsmod = 0 # tsmod is the amount of light for the actual and the next LED.
 			
-			if tm > 0: # normalize the minutes.
+			# set 12 to the first LED (0)
+			if th >= 12:
+				th = 0 
+			
+			# normalize the minutes.
+			if tm > 0:
 				tm=int((12.0/60.0)*tm)
 				if tm>=12:
 					tm=0
-					
-			if tsec > 0: # normalize the seconds.
-				tsmod=tsec%5
+			
+			# normalize the seconds.
+			if tsec > 0:
+				tsmod=tsec%5 # amount of light on the LEDs
 				tsec=int((12.0/60.0)*tsec)
 				if tsec >= 12:
 					tsec=0
-			#if th>12:
-			#	th = th-12
-			if th == 12:
-				th = 0 
-		
-			#create the seconds.
+
+			#tsec2 is the second LED for the seconds.
 			tsec2=tsec+1
 			if tsec2>=12:
 				tsec2=tsec2-12
+
+			# maybe reset the smooth seconds.
+			if oldTsmod!=tsmod:
+				oldTsmod = tsmod
+				smoothSeconds = 0.0
 			
-			up=int(255.0/5 * tsmod)
-			down=int(255.0/5 * (5-tsmod))
+			# create the colouring.
+			up=int((255.0/6 * tsmod)+(255.0/6*smoothSeconds))
+			down=int(255.0/6 * (6-tsmod)-(255.0/6*smoothSeconds))
+			
+			smoothSeconds = smoothSeconds + PIXELWAITTIME
+			if smoothSeconds>1.0:
+				smoothSeconds = 1.0
+			
 			c1 = Color(0,down,0)
 			c2 = Color(0,up,0)
 			clockcol = BeLED_Palette[3]
@@ -300,7 +318,7 @@ def renderTimeFunction(strip):
 			strip.setPixelColor(tsec2,c2)
 			strip.setPixelColor(tm,minutecol)
 			strip.setPixelColor(th,clockcol)
-		
+			
 def renderFunction(strip):
 	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
 	global SHOW_WELCOME_SCREEN_REPEATS	# how many repeats of the welcome screen?
