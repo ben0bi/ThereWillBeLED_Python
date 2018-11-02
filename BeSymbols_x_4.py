@@ -94,9 +94,9 @@ font_CLOCK = [
 
 font_TIME = [
 [0,0,0,0,0,0,0,0,0,0],
-[0,0,0,7,2,7,0,0,0,0],
-[0,0,0,2,2,7,0,0,0,0],
-[0,0,0,7,7,7,0,0,0,0]
+[3,0,0,3,0,7,7,0,7,7],
+[3,3,3,3,0,7,0,7,0,7],
+[3,0,0,3,0,7,0,0,0,7]
 ]
 
 font_DATE = [
@@ -120,6 +120,14 @@ font_LIGHT = [
 [0,0,0,3,2,2,3,0,0,0]
 ]
 
+font_IP = [
+[0,0,0,5,0,5,5,0,0,0],
+[0,0,0,5,0,5,0,5,0,0],
+[0,0,0,5,0,5,5,0,0,0],
+[0,0,0,5,0,5,0,0,0,0]
+]
+
+
 font_SPACE = [
 [0,0,0],
 [0,0,0],
@@ -130,8 +138,8 @@ font_SPACE = [
 # FIDX represents all the indexes in the FONT array. get a character (here: A) like this: charpixels = FONT[FIDX.index('A')]
 # The characters in FIDX MUST have the same order as they are added to the FONT array.
 symbols_x_4_FIDX=[]
-symbols_x_4_FIDX.extend(('P',' ','0','1','2','3','4','T','D'))
+symbols_x_4_FIDX.extend(('P',' ','0','1','2','3','4','T','D','I'))
 
 # The real character arrays are in the FONT array.
 symbols_x_4_FONT=[]
-symbols_x_4_FONT.extend((font_PALETTE, font_SPACE, font_OFF, font_CLOCK, font_CAL, font_SOLSYS, font_LIGHT, font_TIME, font_DATE))
+symbols_x_4_FONT.extend((font_PALETTE, font_SPACE, font_OFF, font_CLOCK, font_CAL, font_SOLSYS, font_LIGHT, font_TIME, font_DATE, font_IP))

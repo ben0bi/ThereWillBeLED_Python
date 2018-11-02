@@ -134,7 +134,6 @@ def renderSingleColorTransparent(strip,maskarray,rendercolor):
 					col = BeLED_Palette[m]
 					strip.setPixelColor(i,rendercolor)
 
-
 # update the text x.
 def updateTextX():
 	global g_textX, g_textWidth, SCREEN_COUNT_X
@@ -142,7 +141,7 @@ def updateTextX():
 	if g_textX < -g_textWidth:
 		g_textX = SCREEN_COUNT_X + 1
 
-# reset the text x.		
+# set a new text and text x.		
 def setRenderText(txt):
 	global g_textX, g_textWidth
 	global font_render
@@ -216,14 +215,19 @@ def renderTimeFunction(strip):
 		global font_render, symbol_render, g_symbolmask
 		global oldTimeSubmenu
 		
+		maxTimeMenus = 3 # how many submenus has this function?
+		
 		s=MENU.getActualSubmenuItem()
 		#create the symbols
 		if oldTimeSubmenu!=s:
 			oldTimeSubmenu=s
-			if s==0:
+			if s==0:	# show time
 				symbol_render=buildSymbolArray_x_4('T')
-			if s==1:
+			if s==1:	# show date
 				symbol_render=buildSymbolArray_x_4('D')
+			if s==2:	# show ip
+				symbol_render = buildSymbolArray_x_4(' ')
+				
 			g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
 			
 		# get the current time.
@@ -231,19 +235,24 @@ def renderTimeFunction(strip):
 		current_time = time.localtime()
 
 		# maybe reset submenu
-		if s>1:
+		if s>=maxTimeMenus:
 			MENU.setActualSubmenuItem(0)
 			s=0
 
+		tt=""
 		# show time
-		#if s==0:
-		tt=time.strftime('%H:%M', current_time)
-		if(g_oldtime!=current_time):
-			font_render = buildTextArray_x_6(tt) # create the text array.
-			g_oldtime = current_time
-			g_textWidth = len(font_render[0])	
+		if s==0:
+			tt=time.strftime('%H:%M', current_time)
 		# show date
-		#if s==1:
+		if s==1:
+			tt=time.strftime('%d. %b %Y', current_time)
+		if s==2: # show only time on wheel.
+			tt=" "
+		
+		if(g_oldtime!=tt):
+			font_render = buildTextArray_x_6(tt) # create the text array.
+			g_oldtime = tt
+			g_textWidth = len(font_render[0])	
 
 		# set text x.
 		updateTextX()
@@ -254,18 +263,43 @@ def renderTimeFunction(strip):
 		renderPaletteTransparent(strip, g_symbolmask)
 			
 		# show time on wheel
-		clockcol = BeLED_Palette[3]
-		minutecol = BeLED_Palette[8]
-		th=int(time.strftime('%H', current_time))
-		tm=int(time.strftime('%M',current_time))
-		if tm > 0:
-			tm=int((12.0/60.0)*tm)
-		if th>12:
-			th = th-12
-		if th == 12:
-			th = 0 
-		strip.setPixelColor(tm,minutecol)
-		strip.setPixelColor(th,clockcol)
+		# colors corresponding to the symbol colors (font_TIME)
+		if s==0 or s==2:
+			th=int(time.strftime('%I', current_time)) 	# get hour (1-12)
+			tm=int(time.strftime('%M',current_time))	# get minute (1-60)
+			tsec=int(time.strftime('%S',current_time))	# get second (1-60)
+			tsmod = 0 # tsmod is the amount of light for the actual and the next LED.
+			
+			if tm > 0: # normalize the minutes.
+				tm=int((12.0/60.0)*tm)
+				if tm>=12:
+					tm=0
+					
+			if tsec > 0: # normalize the seconds.
+				tsmod=tsec%5
+				tsec=int((12.0/60.0)*tsec)
+				if tsec >= 12:
+					tsec=0
+			#if th>12:
+			#	th = th-12
+			if th == 12:
+				th = 0 
+		
+			#create the seconds.
+			tsec2=tsec+1
+			if tsec2>=12:
+				tsec2=tsec2-12
+			
+			up=int(255.0/5 * tsmod)
+			down=int(255.0/5 * (5-tsmod))
+			c1 = Color(0,down,0)
+			c2 = Color(0,up,0)
+			clockcol = BeLED_Palette[3]
+			minutecol = BeLED_Palette[7]
+			strip.setPixelColor(tsec,c1)
+			strip.setPixelColor(tsec2,c2)
+			strip.setPixelColor(tm,minutecol)
+			strip.setPixelColor(th,clockcol)
 		
 def renderFunction(strip):
 	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
