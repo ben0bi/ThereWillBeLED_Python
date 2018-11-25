@@ -103,7 +103,7 @@ def rainbowCycle(strip, maskarray):
 	j=j-5	# adjust the colour "position".
 	if j<=0:
 		j=maxJ+j
-		
+
 def renderPaletteTransparent(strip, maskarray):
 	"""Draw a mask with the palette colours for their corresponding numbers.
 		ATTENTION: This function uses a FLAT mask.
@@ -212,122 +212,155 @@ oldTimeSubmenu = -1
 smoothSeconds = 0.0
 oldTsmod = -1
 
+# This function renders the time.
 def renderTimeFunction(strip):
-		global g_oldtime
-		global g_textWidth, g_textX, g_fontmask
-		global font_render, symbol_render, g_symbolmask
-		global oldTimeSubmenu
-		global smoothSeconds, oldTsmod, PIXELWAITTIME
+	"Render actual time and date."
+	global g_oldtime
+	global g_textWidth, g_textX, g_fontmask
+	global font_render, symbol_render, g_symbolmask
+	global oldTimeSubmenu
+	global smoothSeconds, oldTsmod, PIXELWAITTIME
 		
-		maxTimeMenus = 3 # how many submenus has this function?
+	maxTimeMenus = 3 # how many submenus has this function?
 		
-		s=MENU.getActualSubmenuItem()
-		#create the symbols
-		if oldTimeSubmenu!=s:
-			oldTimeSubmenu=s
-			if s==0:	# show time
-				symbol_render=buildSymbolArray_x_4('T')
-			if s==1:	# show date
-				symbol_render=buildSymbolArray_x_4('D')
-			if s==2 or s==3:	# show only clock without anything other.
-				symbol_render = buildSymbolArray_x_4(' ')
-				
-			g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
-			
-		# get the current time.
+	# 1 time with text
+	# 2 date with text
+	# 3 time only on wheel
+		
+	s=MENU.getActualSubmenuItem()
+	#create the symbols
+	if oldTimeSubmenu!=s:
+		oldTimeSubmenu=s
+		if s==0:	# show time
+			symbol_render=buildSymbolArray_x_4('T')
+		if s==1:	# show date
+			symbol_render=buildSymbolArray_x_4('D')
+		if s==2 or s==3:	# show only clock without anything other.
+			symbol_render = buildSymbolArray_x_4(' ')		
+		g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
+		
+	# get the current time.
 #		currenttime = time.ctime(time.time())
-		current_time = time.localtime()
+	current_time = time.localtime()
 
-		# maybe reset submenu
-		if s>=maxTimeMenus:
-			MENU.setActualSubmenuItem(0)
-			s=0
+	# maybe reset submenu
+	if s>=maxTimeMenus:
+		MENU.setActualSubmenuItem(0)
+		s=0
 
-		# show time or date (text)
-		tt=""
-		if s==0:
-			tt=time.strftime('%H:%M', current_time)
-		# show date
-		if s==1:
-			tt=time.strftime('%d. %b %Y', current_time)
-		if s==2 or s==3: # show only time on wheel.
-			tt=" "
+	# show time or date (text)
+	tt=""
+	if s==0:
+		tt=time.strftime('%H:%M', current_time)
+	# show date
+	if s==1:
+		tt=time.strftime('%d.%B %Y', current_time)
+	if s==2 or s==3: # show only time on wheel.
+		tt=" "
 
-		# maybe reset the text
-		if(g_oldtime!=tt):
-			font_render = buildTextArray_x_6(tt) # create the text array.
-			g_oldtime = tt
-			g_textWidth = len(font_render[0])	
+	# maybe reset the text
+	if(g_oldtime!=tt):
+		font_render = buildTextArray_x_6(tt) # create the text array.
+		g_oldtime = tt
+		g_textWidth = len(font_render[0])	
 
-		# set text x.
-		updateTextX()
+	# set text x.
+	updateTextX()
 		
-		# render text to strip.
-		mask = createFlatScreenMask(font_render, g_textX, 0)
-		rainbowCycle(strip, mask)
-		renderPaletteTransparent(strip, g_symbolmask)
+	# render text to strip.
+	mask = createFlatScreenMask(font_render, g_textX, 0)
+	rainbowCycle(strip, mask)
+	renderPaletteTransparent(strip, g_symbolmask)
 			
-		# show time on wheel
-		# colors corresponding to the symbol colors (font_TIME)
-		if s==0 or s==2 or s==3:
-			th=int(time.strftime('%I', current_time)) 	# get hour (1-12)
-			tm=int(time.strftime('%M',current_time))	# get minute (1-60)
-			tsec=int(time.strftime('%S',current_time))	# get second (1-60)
-			tsmod = 0 # tsmod is the amount of light for the actual and the next LED.
+	# show time on wheel
+	# colors corresponding to the symbol colors (font_TIME)
+	if s==0 or s==2 or s==3:
+		th=int(time.strftime('%I', current_time)) 	# get hour (1-12)
+		tm=int(time.strftime('%M',current_time))	# get minute (1-60)
+		tsec=int(time.strftime('%S',current_time))	# get second (1-60)
+		tsmod = 0 # tsmod is the amount of light for the actual and the next LED.
 			
-			# set 12 to the first LED (0)
-			if th >= 12:
-				th = 0 
+		# set 12 to the first LED (0)
+		if th >= 12:
+			th = 0 
 			
-			# normalize the minutes.
-			if tm > 0:
-				tm=int((12.0/60.0)*tm)
-				if tm>=12:
-					tm=0
-			
-			# normalize the seconds.
-			if tsec > 0:
-				tsmod=tsec%5 # amount of light on the LEDs
-				tsec=int((12.0/60.0)*tsec)
-				if tsec >= 12:
-					tsec=0
+		# normalize the minutes.
+		if tm > 0:
+			tm=int((12.0/60.0)*tm)
+			if tm>=12:
+				tm=0
+		
+		# normalize the seconds.
+		if tsec > 0:
+			tsmod=tsec%5 # amount of light on the LEDs
+			tsec=int((12.0/60.0)*tsec)
+			if tsec >= 12:
+				tsec=0
 
-			#tsec2 is the second LED for the seconds.
-			tsec2=tsec+1
-			if tsec2>=12:
-				tsec2=tsec2-12
+		#tsec2 is the second LED for the seconds.
+		tsec2=tsec+1
+		if tsec2>=12:
+			tsec2=tsec2-12
 
-			# maybe reset the smooth seconds.
-			if oldTsmod!=tsmod:
-				oldTsmod = tsmod
-				smoothSeconds = 0.0
+		# maybe reset the smooth seconds.
+		if oldTsmod!=tsmod:
+			oldTsmod = tsmod
+			smoothSeconds = 0.0
 			
-			# create the colouring.
-			up=int((255.0/6 * tsmod)+(255.0/6*smoothSeconds))
-			down=int(255.0/6 * (6-tsmod)-(255.0/6*smoothSeconds))
+		# create the colouring.
+		up=int((255.0/6 * tsmod)+(255.0/6*smoothSeconds))
+		down=int(255.0/6 * (6-tsmod)-(255.0/6*smoothSeconds))
 			
-			smoothSeconds = smoothSeconds + PIXELWAITTIME
-			if smoothSeconds>1.0:
-				smoothSeconds = 1.0
+		smoothSeconds = smoothSeconds + PIXELWAITTIME
+		if smoothSeconds>1.0:
+			smoothSeconds = 1.0
 			
-			c1 = Color(0,down,0)
-			c2 = Color(0,up,0)
-			clockcol = BeLED_Palette[3]
-			minutecol = BeLED_Palette[7]
-			strip.setPixelColor(tsec,c1)
-			strip.setPixelColor(tsec2,c2)
-			strip.setPixelColor(tm,minutecol)
-			strip.setPixelColor(th,clockcol)
-			
-def renderFunction(strip):
+		c1 = Color(0,down,0)
+		c2 = Color(0,up,0)
+		clockcol = BeLED_Palette[3]
+		minutecol = BeLED_Palette[7]
+		strip.setPixelColor(tsec,c1)
+		strip.setPixelColor(tsec2,c2)
+		strip.setPixelColor(tm,minutecol)
+		strip.setPixelColor(th,clockcol)
+
+def renderLightFunction(strip):
+	"Render just some lights."
 	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
+	global SCREEN_COUNT_PRE
+	global ACTUAL_LIGHT_ITEM
+	
+	s=MENU.getActualSubmenuItem()
+	if s>=29: # 29 light modes, yay
+		MENU.setActualSubmenuItem(0)
+		s=0
+	ACTUAL_LIGHT_ITEM = s
+
+	# get the palette color.
+	pc = (s-2)%9
+	palettecol = BeLED_Palette[pc+1] # palette 0 = black
+
+	# original light cone light.
+	if s < 2:
+		renderPaletteTransparent(strip,LIGHTCONE_FLATMASK)
+		palettecol=BeLED_Palette[3]
+
+	# draw outer circle
+	if s < 20 and s!=1:
+		for i in range(SCREEN_COUNT_PRE):
+			strip.setPixelColor(i,palettecol)
+
+	# draw inner circle
+	if (s>=2 and s<=10) or s>=20:
+		renderSingleColorTransparent(strip,LIGHTCONE_FLATMASK,palettecol)
+		
+def renderFunction(strip):
+	"Render something."
 	global SHOW_WELCOME_SCREEN_REPEATS	# how many repeats of the welcome screen?
 	global SCREEN_COUNT_X
 	global g_textX, g_textWidth
 	global font_render
 
-	global ACTUAL_LIGHT_ITEM
-	
 	if SHOW_WELCOME_SCREEN_REPEATS>0:
 		#SHOW_WELCOME_SCREEN_TIME = SHOW_WELCOME_SCREEN_TIME-PIXELWAITTIME
 		mask = createFlatScreenMask(font_render,g_textX,2)
@@ -337,41 +370,20 @@ def renderFunction(strip):
 			SHOW_WELCOME_SCREEN_REPEATS=SHOW_WELCOME_SCREEN_REPEATS-1
 		rainbowCycle(strip, mask)
 		return
-		
+
 	# get the actual function to draw.
 	func = MENU.getActualMenuItemFunction()
-	
+
 	# show nothing.
 	if func=="off":
 		# todo: maybe show next calendar entry here.
-		return
+		return 0
 
 	# just some lights.
 	if func=="light":
-		s=MENU.getActualSubmenuItem()
-		if s>=29: # 29 light modes, yay
-			MENU.setActualSubmenuItem(0)
-			s=0
-		ACTUAL_LIGHT_ITEM = s
-		
-		# get the palette color.
-		pc = (s-2)%9
-		palettecol = BeLED_Palette[pc+1] # palette 0 = black
-	
-		# original light cone light.
-		if s < 2:
-			renderPaletteTransparent(strip,LIGHTCONE_FLATMASK)
-			palettecol=BeLED_Palette[3]
-		
-		# draw outer circle
-		if s < 20 and s!=1:
-			for i in range(SCREEN_COUNT_PRE):
-				strip.setPixelColor(i,palettecol)
-		
-		# draw inner circle
-		if (s>=2 and s<=10) or s>=20:
-			renderSingleColorTransparent(strip,LIGHTCONE_FLATMASK,palettecol)
+		renderLightFunction(strip)
 
+	# show actual time and date.
 	if func=="clock":
 		renderTimeFunction(strip)
 
@@ -380,29 +392,29 @@ def renderFunction(strip):
 
 # Main program logic follows:
 if __name__ == '__main__':
-    # Process arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
-    args = parser.parse_args()
-	
-	# initialize the menu GPIO stuff.
-    MENU.initGPIO()
-	
-    # Create NeoPixel object with appropriate configuration.
-    strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    # Intialize the library (must be called once before other functions).
-    strip.begin()
-	
-    print ('Press Ctrl-C to quit.')
-    if not args.clear:
-        print('Use "-c" argument to clear LEDs on exit')
+	# Process arguments
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
+	args = parser.parse_args()
 
-    try:
+	# initialize the menu GPIO stuff.
+	MENU.initGPIO()
+
+	# Create NeoPixel object with appropriate configuration.
+	strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+	# Intialize the library (must be called once before other functions).
+	strip.begin()
+
+	print ('Press Ctrl-C to quit.')
+	if not args.clear:
+		print('Use "-c" argument to clear LEDs on exit')
+
+	try:
 		while True:
 			#renderArray(strip,font_render,px,2)
 			# render the background.
 			MENU.updateGPIOButtons()
-			
+
 			# the main menu changed, get the right symbol and stuff.
 			if MENU.menuHasChanged() > 0:
 				# create the symbol for the menu.
@@ -416,7 +428,7 @@ if __name__ == '__main__':
 				# set submenu parameters
 				if func == "light":
 					MENU.setActualSubmenuItem(ACTUAL_LIGHT_ITEM)
-			
+
 			# clear the screen with black.
 			clearScreen(strip, Color(0,0,0))
 
@@ -425,14 +437,14 @@ if __name__ == '__main__':
 				renderMenu(strip)
 			else:
 				renderFunction(strip)
-				
+
 			# finally show the strip and wait some time.
 			strip.show()
 			MENU.updateMenuChangeTime(PIXELWAITTIME)
 			time.sleep(PIXELWAITTIME)
-						
-    except KeyboardInterrupt:
-        if args.clear:
-            clearScreen(strip, Color(0,0,0))
-            strip.show()
-            MENU.cleanupGPIO()
+
+	except KeyboardInterrupt:
+		if args.clear:
+			clearScreen(strip, Color(0,0,0))
+			strip.show()
+			MENU.cleanupGPIO()
