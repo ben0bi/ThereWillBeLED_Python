@@ -1,6 +1,15 @@
 # ThereWillBeLED_Python
 Font render engine using the ws281x library from jgarff https://github.com/jgarff/rpi_ws281x
 
+# "Not only the Lib"
+This piece of software contains a working example for use with a 10x10 
+screen with 12 PRE-Leds (112 LEDS). I made it for a project of mine.
+
+Also, it may use DB connections for the BeCal piece of software also on github.
+
+(The DB structure is not yet online.)
+
+
 # BeLED ben0bis LED library
 You can use this lib to create 2 dimensional ws281x LED screens including some LEDs for special functions.
 A typical screen is built like this (here: 5x5 with one Pre-LED and 2 After-LEDs)
