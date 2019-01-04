@@ -8,8 +8,8 @@ import RPi.GPIO as GPIO
 MAINMENU_ARRAY = [
 [" ","0","off"],		# off has no text
 [" Clock  ","1","clock"],
-["Calendar", "2","calendar"],
-["Sol.Sys.","3","solsystem"],
+["Calendar", "2","calendar_events"],
+[" TODOs  ","3","calendar_todos"],
 [" Light  ","4","light"]
 ]
 

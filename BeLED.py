@@ -17,9 +17,14 @@
 #		It should download and show the song name and other information when the user presses a (GPIO-)button.
 # Nice-To-Have for Music: download lyrics if possible and show them.
 
+# Also right now: Download all the datas from BeCal
+# and show it at the right times.
+
 import time
 from neopixel import *
 import argparse
+
+import netifaces as ni
 
 from BeLEDLib import *
 import BeGPIOMenu as MENU
@@ -33,13 +38,23 @@ from BeSymbols_x_4 import buildSymbolArray_x_4
 ACTUAL_LIGHT_ITEM = 0
 
 # how many repeats of the welcome screen?
-SHOW_WELCOME_SCREEN_REPEATS = 3
+SHOW_WELCOME_SCREEN_REPEATS = 1
+# New todo: show how many calendar entries are at this day, including todos.
+# Do this after start and when the event is in a hour and the screen is off
+# and when the user uses the calendar menu.
 
-font_render = buildTextArray_x_6('Welcome to BeLED!') 	# This is the main x_6 font text, in rainbow colors.
-symbol_render = buildSymbolArray_x_4('3')		  		# This is the Symbol below the main text.
+# get the actual IP
+ni.ifaddresses('wlan0')
+g_actualIP = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+g_font_IP = buildTextArray_x_6("My IP: "+g_actualIP) # create the text array.
+
+welcome_text = 'Welcome to BeLED! My local IP is: '+g_actualIP
+font_render =  buildTextArray_x_6(welcome_text) 	# This is the main x_6 font text, in rainbow colors.
+symbol_render = buildSymbolArray_x_4('3')		# This is the Symbol below the main text.
 g_symbolmask = createFlatScreenMask(symbol_render,0,5)	# the mask for the symbol is global because it does not move.
 
 # get the text widths for floating.
+# font render is a char strip, each line is one index (y,x based)
 g_textWidth=len(font_render[0])
 g_textX=SCREEN_COUNT_X+1
 
@@ -50,7 +65,7 @@ g_oldtime = ""
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
 LED_COUNT      = SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y) + SCREEN_COUNT_AFT  # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
-#LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
+#LED_PIN        = 10     # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 155     # Set to 0 for darkest and 255 for brightest
@@ -58,7 +73,7 @@ LED_INVERT     = False   # True to invert the signal (when using NPN transistor 
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
 # New: Palette
-# Use the values 1 through 9 in your symbols, and then use renderPalette(mask,paleteIndex)
+# Use the values 1 through 9 in your symbols, and then use renderPalette(mask,paletteIndex)
 BeLED_Palette=[
 Color(0,0,0),			# If it is not transparent, 0 is black.
 Color(255,255,127),
@@ -88,7 +103,8 @@ def wheel(pos):
 j = 0
 maxJ = 256
 def rainbowCycle(strip, maskarray):
-	"""Draw rainbow that uniformly distributes itself across all pixels, but just where the mask is set.
+	"""Draw rainbow that uniformly distributes itself across all pixels,
+		but just where the mask is set.
 		ATTENTION: This function uses a FLAT mask!"""
 	global j
 	global maxJ
@@ -136,21 +152,22 @@ def renderSingleColorTransparent(strip,maskarray,rendercolor):
 
 # update the text x.
 def updateTextX():
+	""" Update the text x position."""
 	global g_textX, g_textWidth, SCREEN_COUNT_X
 	g_textX = g_textX - 1
 	if g_textX < -g_textWidth:
 		g_textX = SCREEN_COUNT_X + 1
 
-# set a new text and text x.		
+# set a new text and text x.
 def setRenderText(txt):
+	""" Set a new Text for Rendering. """
 	global g_textX, g_textWidth
 	global font_render
 	global SCREEN_COUNT_X
-	
 	g_textX = SCREEN_COUNT_X+1
 	font_render = buildTextArray_x_6(txt)
 	g_textWidth = len(font_render[0])
-	
+
 ###### RENDER FUNCTIONS ##########################
 
 # clear all pixels
@@ -161,13 +178,12 @@ def clearScreen(strip, clearcolor):
 
 # render the menu.
 def renderMenu(strip):
+	"""Render the menu when it is on."""
 	global symbol_render
 	global g_textX, font_render
-	
 	itm = MENU.getActualMenuItem()
 	m = itm
 	max = MENU.getMainMenuCount()
-	
 	menucolor = Color(126,255,0)
 	bordercolor = Color(0,255,0)
 	# maybe draw a border.
@@ -178,21 +194,17 @@ def renderMenu(strip):
 		strip.setPixelColor(0,bordercolor)
 		if max<11:
 			strip.setPixelColor(max+1, bordercolor)
-
 	# show the menu indicator.
 	if m >= 0 and m < SCREEN_COUNT_PRE:
 		strip.setPixelColor(m, menucolor)
-
 	# draw the mask with the symbol.
 	symask = createFlatScreenMask(symbol_render, 0, 5)
 	renderPaletteTransparent(strip,symask)
-
 	# draw the menu text.
-	txtmask = createFlatScreenMask(font_render,g_textX,0)	
+	txtmask = createFlatScreenMask(font_render,g_textX,0)
 	rainbowCycle(strip, txtmask)
-	
 	updateTextX()
-	
+
 
 # render the stuff for the actual function.
 LIGHTCONE_FLATMASK = [
@@ -214,19 +226,19 @@ oldTsmod = -1
 
 # This function renders the time.
 def renderTimeFunction(strip):
-	"Render actual time and date."
+	"""Render actual time and date."""
 	global g_oldtime
 	global g_textWidth, g_textX, g_fontmask
 	global font_render, symbol_render, g_symbolmask
 	global oldTimeSubmenu
 	global smoothSeconds, oldTsmod, PIXELWAITTIME
-		
+
 	maxTimeMenus = 3 # how many submenus has this function?
-		
+
 	# 1 time with text
 	# 2 date with text
 	# 3 time only on wheel
-		
+
 	s=MENU.getActualSubmenuItem()
 	#create the symbols
 	if oldTimeSubmenu!=s:
@@ -235,12 +247,11 @@ def renderTimeFunction(strip):
 			symbol_render=buildSymbolArray_x_4('T')
 		if s==1:	# show date
 			symbol_render=buildSymbolArray_x_4('D')
-		if s==2 or s==3:	# show only clock without anything other.
-			symbol_render = buildSymbolArray_x_4(' ')		
+		if s==2 or s==3: # show only clock without anything other.
+			symbol_render = buildSymbolArray_x_4(' ')
 		g_symbolmask = createFlatScreenMask(symbol_render, 0,5)
-		
+
 	# get the current time.
-#		currenttime = time.ctime(time.time())
 	current_time = time.localtime()
 
 	# maybe reset submenu
@@ -262,16 +273,16 @@ def renderTimeFunction(strip):
 	if(g_oldtime!=tt):
 		font_render = buildTextArray_x_6(tt) # create the text array.
 		g_oldtime = tt
-		g_textWidth = len(font_render[0])	
+		g_textWidth = len(font_render[0])
 
 	# set text x.
 	updateTextX()
-		
+
 	# render text to strip.
 	mask = createFlatScreenMask(font_render, g_textX, 0)
 	rainbowCycle(strip, mask)
 	renderPaletteTransparent(strip, g_symbolmask)
-			
+
 	# show time on wheel
 	# colors corresponding to the symbol colors (font_TIME)
 	if s==0 or s==2 or s==3:
@@ -279,17 +290,17 @@ def renderTimeFunction(strip):
 		tm=int(time.strftime('%M',current_time))	# get minute (1-60)
 		tsec=int(time.strftime('%S',current_time))	# get second (1-60)
 		tsmod = 0 # tsmod is the amount of light for the actual and the next LED.
-			
+
 		# set 12 to the first LED (0)
 		if th >= 12:
-			th = 0 
-			
+			th = 0
+
 		# normalize the minutes.
 		if tm > 0:
 			tm=int((12.0/60.0)*tm)
 			if tm>=12:
 				tm=0
-		
+
 		# normalize the seconds.
 		if tsec > 0:
 			tsmod=tsec%5 # amount of light on the LEDs
@@ -306,15 +317,15 @@ def renderTimeFunction(strip):
 		if oldTsmod!=tsmod:
 			oldTsmod = tsmod
 			smoothSeconds = 0.0
-			
+
 		# create the colouring.
 		up=int((255.0/6 * tsmod)+(255.0/6*smoothSeconds))
 		down=int(255.0/6 * (6-tsmod)-(255.0/6*smoothSeconds))
-			
+
 		smoothSeconds = smoothSeconds + PIXELWAITTIME
 		if smoothSeconds>1.0:
 			smoothSeconds = 1.0
-			
+
 		c1 = Color(0,down,0)
 		c2 = Color(0,up,0)
 		clockcol = BeLED_Palette[3]
@@ -325,11 +336,11 @@ def renderTimeFunction(strip):
 		strip.setPixelColor(th,clockcol)
 
 def renderLightFunction(strip):
-	"Render just some lights."
-	global LIGHTCONE_FLATMASK			# the mask for the lighting, so it appears round.
+	"""Render just some lights."""
+	global LIGHTCONE_FLATMASK # the mask for the lighting, so it appears round.
 	global SCREEN_COUNT_PRE
 	global ACTUAL_LIGHT_ITEM
-	
+
 	s=MENU.getActualSubmenuItem()
 	if s>=29: # 29 light modes, yay
 		MENU.setActualSubmenuItem(0)
@@ -353,15 +364,19 @@ def renderLightFunction(strip):
 	# draw inner circle
 	if (s>=2 and s<=10) or s>=20:
 		renderSingleColorTransparent(strip,LIGHTCONE_FLATMASK,palettecol)
-		
+
 def renderFunction(strip):
-	"Render something."
+	"""Render something."""
 	global SHOW_WELCOME_SCREEN_REPEATS	# how many repeats of the welcome screen?
 	global SCREEN_COUNT_X
 	global g_textX, g_textWidth
 	global font_render
 
+	global g_font_IP
+
 	if SHOW_WELCOME_SCREEN_REPEATS>0:
+		# todo: show count of calendar events and todos.
+		# todo: show ip
 		#SHOW_WELCOME_SCREEN_TIME = SHOW_WELCOME_SCREEN_TIME-PIXELWAITTIME
 		mask = createFlatScreenMask(font_render,g_textX,2)
 		g_textX = g_textX-1
@@ -376,7 +391,28 @@ def renderFunction(strip):
 
 	# show nothing.
 	if func=="off":
+		s=MENU.getActualSubmenuItem()
+		if s>1:
+			s=0
+			MENU.setActualSubmenuItem(0)
+		if s==1:
+			# show the actual ip.
+			g_textWidth = len(g_font_IP[0])
+			g_textX=g_textX-1
+			if g_textX<-g_textWidth:
+				g_textX = SCREEN_COUNT_X+1
+			mask = createFlatScreenMask(g_font_IP,g_textX,2)
+			rainbowCycle(strip, mask)
+
 		# todo: maybe show next calendar entry here.
+		return 0
+
+	if func=="calendar_events":
+		# todo: show next events in ascending order.
+		return 0
+
+	if func=="calendar_todos":
+		# todo: show todos (own function)
 		return 0
 
 	# just some lights.
@@ -389,6 +425,8 @@ def renderFunction(strip):
 
 # Aaand done. :)
 	return 0
+
+############################################################################
 
 # Main program logic follows:
 if __name__ == '__main__':
