@@ -106,5 +106,3 @@ Make a redirecting index.html in /var/www/html which redirects to BeCal/index.ht
 SQL:
 sudo apt-get install python-mysql
 pip install python-sql
-
-
