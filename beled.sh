@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sudo python BeLED.py -c
+sudo python potled.py -c
 

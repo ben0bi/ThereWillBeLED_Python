@@ -8,4 +8,8 @@ scons
 cd python
 sudo python setup.py install
 sudo python3 setup.py install
+cd ../..
+sudo pip install netifaces
+sudo pip3 install netifaces
+
 echo "*** LEDs installed. ***"

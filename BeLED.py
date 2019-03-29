@@ -38,14 +38,14 @@ from BeSymbols_x_4 import buildSymbolArray_x_4
 ACTUAL_LIGHT_ITEM = 0
 
 # how many repeats of the welcome screen?
-SHOW_WELCOME_SCREEN_REPEATS = 1
+SHOW_WELCOME_SCREEN_REPEATS = 10
 # New todo: show how many calendar entries are at this day, including todos.
 # Do this after start and when the event is in a hour and the screen is off
 # and when the user uses the calendar menu.
 
 # get the actual IP
-ni.ifaddresses('wlan0')
-g_actualIP = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+ni.ifaddresses('eth0')
+g_actualIP = ni.ifaddresses('eth0')[ni.AF_INET][0]['addr']
 g_font_IP = buildTextArray_x_6("My IP: "+g_actualIP) # create the text array.
 
 welcome_text = 'Welcome to BeLED! My local IP is: '+g_actualIP
@@ -63,7 +63,7 @@ g_oldtime = ""
 
 # LED strip configuration:
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
-LED_COUNT      = SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y) + SCREEN_COUNT_AFT  # Number of LED pixels.
+#LED_COUNT      = SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y) + SCREEN_COUNT_AFT  # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 #LED_PIN        = 10     # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)

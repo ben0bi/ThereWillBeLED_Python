@@ -36,7 +36,7 @@ def initGPIO():
 	GPIO.setup(BCM_BTN_MAINMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 	GPIO.setup(BCM_BTN_SUBMENU, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 	print ("GPIO setup done.")
-	
+
 # update the GPIO buttons and switch through the menus.
 def updateGPIOButtons():
 	global BCM_BTN_MAINMENU, BCM_BTN_SUBMENU

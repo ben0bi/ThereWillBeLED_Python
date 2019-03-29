@@ -63,17 +63,27 @@
 
 # BeLED screen configuration
 # The screen can have "lights" before and after it on the same line, for lighting other stuff, too, like a power LED.
-SCREEN_COUNT_PRE 	= 12	# Number of LEDs before the actual screen. I use one special LED for...special stuff. :)
+SCREEN_COUNT_PRE 	= 0	# Number of LEDs before the actual screen. I used one special LED for...special stuff. :)
 SCREEN_COUNT_X 		= 10	# Number of LEDs in one line on the screen.
-SCREEN_COUNT_Y		= 10	# Number of lines on the screen.
+SCREEN_COUNT_Y		= 5	# Number of lines on the screen.
 SCREEN_COUNT_AFT	= 0	# Number of LEDs after the actual screen. I just use one at the begin.
-SCREEN_DIRECTION 	= 2     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
+SCREEN_DIRECTION 	= 0     # 0 = normal, 1 = y flip, 2 = x flip, 3 = x & y flip
 					# This is used for the renderArray function to determine which side of the array faces up.
 					# Needed for rendering the fonts in the right direction, my setup is "wrong" for y so I use 1 here.
 #SCREEN_ORIENTATION = 0		# 0 = "north", 1 = "south", 2 = "east", 3 = "west"
 # (not used right now)		# even if the screen is flipped right, it may be turned into the wrong direction.
 							# we turn it with this function.
-SCREEN_END_POSITION = (SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y))
+SCREEN_END_POSITION = (SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y)) # The end Position of the screen.
+
+# LED Configuration
+LED_COUNT      = SCREEN_COUNT_PRE + (SCREEN_COUNT_X * SCREEN_COUNT_Y) + SCREEN_COUNT_AFT  # Number of LED pixels.
+LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
+#LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
+LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
+LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
+LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
+LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
 # render a screenarray to a mask with the size of the strip screen.
 def createScreenMask(screenarray,x,y):
@@ -143,3 +153,7 @@ def combineFlatScreenMasks_OR(mask1, mask2):
 		else:
 			result.append(0)
 	return result
+	
+# get the array width of a 2d text array.
+def get2DTextArrayWidth(tar):
+	return len(tar[0])
