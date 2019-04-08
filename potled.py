@@ -12,55 +12,121 @@ import argparse
 # lib needed for gpio input and output
 import RPi.GPIO as GPIO
 
-# button pinouts
-# ok is up, cancel is down. left is left and right is right.
-GPIO_BTN_OK = 27
-GPIO_BTN_CANCEL = 17
-GPIO_BTN_LEFT = 11
-GPIO_BTN_RIGHT = 22
-
 # New: Benobis stuff.
 from BeLEDLib import *
 from BeFont_x_6 import buildTextArray_x_6 as buildTextArray
 
+# button pinouts
+# ok is up, cancel is down. left is left and right is right.
+GPIO_BTN_UP = 27
+GPIO_BTN_DOWN = 17
+GPIO_BTN_LEFT = 11
+GPIO_BTN_RIGHT = 22
+
+PRESSED = 0				# state of a button when it is pressed.
+MENU_ON = 0				# is the menu on.
+
+#benobi stuff.
+show_text = 'Welcome to BeLED! @XOXO#'
+show_text_array =  buildTextArray(show_text)
+g_text_width = get2DTextArrayWidth(show_text_array)
+g_posX = SCREEN_COUNT_X + 1
+
+# characters to switch through.
+g_actual_char = 0
+g_char_array=['<SHOW>','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u',
+'v','w','x','y','z','.','=','+','-','*','0','1','2','3','4','5','6','7','8','9','[SPACE]','<OK>']
+
 # initialize the GPIO buttons.
 def initGPIO():
 	# we use pull up and connect to GND! (5th pin)
-	global GPIO_BTN_OK, GPIO_BTN_CANCEL, GPIO_BTN_LEFT, GPIO_BTN_RIGHT
+	global GPIO_BTN_UP, GPIO_BTN_DOWN, GPIO_BTN_LEFT, GPIO_BTN_RIGHT
 	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(GPIO_BTN_OK, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-	GPIO.setup(GPIO_BTN_CANCEL, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+	GPIO.setup(GPIO_BTN_UP, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+	GPIO.setup(GPIO_BTN_DOWN, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 	GPIO.setup(GPIO_BTN_LEFT, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 	GPIO.setup(GPIO_BTN_RIGHT, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 	print ("GPIO setup done.")
 
+# update the menu.
+g_brp=0	#right button down?
+g_blp=0 #left button down?
+g_bdp=0 #down button down?
+g_bup=0 #up button down?
 def updateGPIO():
-	global GPIO_BTN_OK, GPIO_BTN_CANCEL, GPIO_BTN_LEFT, GPIO_BTN_RIGHT
-	bo = GPIO.input(GPIO_BTN_OK)
-	bc = GPIO.input(GPIO_BTN_CANCEL)
+	global GPIO_BTN_UP, GPIO_BTN_DOWN, GPIO_BTN_LEFT, GPIO_BTN_RIGHT, PRESSED, MENU_ON
+	global g_actual_char, g_char_array
+	global show_text
+	global g_brp, g_blp, g_bdp, g_bup
+	
+	bu = GPIO.input(GPIO_BTN_UP)
+	bd = GPIO.input(GPIO_BTN_DOWN)
 	bl = GPIO.input(GPIO_BTN_LEFT)
 	br = GPIO.input(GPIO_BTN_RIGHT)
 		
-	if bo==0:
-		print('OK pressed')
-	if bc==0:
-		print('CANCEL pressed')
-	if bl==0:
-		print('LEFT pressed')
-	if br==0:
-		print('RIGHT pressed')
+	if bu==PRESSED:
+		print('UP pressed')
+	if bd!=PRESSED:
+		g_bdp=0
+	if bl!=PRESSED:
+		g_blp=0
+	if br!=PRESSED:
+		g_brp=0
+
+# turn menu on.
+	if bl==PRESSED and br==PRESSED and MENU_ON==0:
+		print("MENU | <- previous char | -> next char | v add char | ^ delete char")
+		print("TEXT> "+show_text)
+		MENU_ON = 1
+
+# change characters.
+	if MENU_ON==1:
+		#next char.
+		changed = 0
+		if br==PRESSED and g_brp!=1:
+			g_actual_char = g_actual_char+1
+			changed = 1
+			g_brp=1
+		#previous char.
+		if bl == PRESSED and g_blp!=1:
+			g_actual_char = g_actual_char-1
+			changed = 1
+			g_blp=1
+		#constrain to array size.
+		if g_actual_char < 0:
+			g_actual_char = len(g_char_array)-1
+		if g_actual_char >= len(g_char_array):
+			g_actual_char=0
+		
+		#add the given character.
+		if bd == PRESSED and g_bdp!=1:
+			c = g_char_array[g_actual_char]
+			if c == '[SPACE]':
+				show_text = show_text+' '
+			if c == '<OK>':
+				MENU_ON = 0
+			if c!='[SPACE]' and c!='<OK>' and c!='<SHOW>':
+				show_text = show_text+g_char_array[g_actual_char]
+			print('{'+show_text+'}')
+			changed = 1
+			g_bdp=1
+
+		if changed == 1:
+			print(g_char_array[g_actual_char])
 		
 # clean the GPIO status.
 def cleanupGPIO():
 	GPIO.cleanup()
-		
-#benobi stuff.
-welcome_text = 'Welcome to BeLED! @XOXO#'
-welcome_text_array =  buildTextArray(welcome_text)
-g_text_width = get2DTextArrayWidth(welcome_text_array)
-g_posX = SCREEN_COUNT_X + 1
 
 PIXELWAITTIME = 40*0.001 # Frame wait time in seconds (30ms)
+
+# clear all pixels
+def clearScreen(strip, clearcolor):
+	"""Clear all pixels on the screen."""
+	for i in range(strip.numPixels()):
+		strip.setPixelColor(i, clearcolor)
+
+# PREDEFINED Functions. --------------------------------------------------------------------------------------------------------------------------------
 
 # Define functions which animate LEDs in various ways.
 def colorWipe(strip, color, wait_ms=50):
@@ -140,7 +206,15 @@ if __name__ == '__main__':
     try:
 
         while True:
-		    updateGPIO()
+            updateGPIO()
+			
+            # clear the screen with black.
+            clearScreen(strip, Color(0,0,0))
+
+			# finally show the strip and wait some time.
+            strip.show()
+            time.sleep(PIXELWAITTIME)
+			
 #            print ('Color wipe animations.')
 #            colorWipe(strip, Color(255, 0, 0))  # Red wipe
 #            colorWipe(strip, Color(0, 255, 0))  # Blue wipe
